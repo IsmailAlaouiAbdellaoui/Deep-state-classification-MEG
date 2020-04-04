@@ -2,9 +2,8 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Conv2D, Dense, Flatten, Input, LSTM, concatenate, Permute, Add, BatchNormalization
 import tensorflow as tf
 
-# dropout
 
-class Multiview:
+class MultiviewAttention:
     def __init__(self, window_size,conv1_filters,conv2_filters,conv3_filters,
                  conv1_kernel_shape,conv2_kernel_shape,conv3_kernel_shape,
                  padding1,padding2,padding3,conv1_activation,conv2_activation,
@@ -173,17 +172,12 @@ class Multiview:
             inputs_cnn.append(input_cnn)
             inputs_lstm.append(input_lstm)
             
-            #conv1 = Conv2D(self.conv1_filters, self.conv1_kernel_shape, padding = self.padding1,activation=self.conv1_activation,input_shape=(self.mesh_rows,self.mesh_columns,1),name = str(i+1)+"conv"+str(1))(input_cnn)
             conv1 = self.tfaugmented_conv2d(input_cnn, self.conv1_filters, self.conv1_kernel_shape, dk=self.depth_k, dv=self.depth_v, Nh=self.num_heads, relative=self.relative)
             norm1 = BatchNormalization(axis = -1)(conv1)
             
             conv2 = Conv2D(self.conv2_filters, self.conv2_kernel_shape, padding = self.padding2, activation=self.conv2_activation)(norm1)
-            #conv2 = self.tfaugmented_conv2d(norm1, self.conv2_filters, self.conv2_kernel_shape, dk=self.depth_k, dv=self.depth_v, Nh=self.num_heads, relative=self.relative)
-            #norm2 = BatchNormalization(axis = -1)(conv2)
 
             conv3 = Conv2D(self.conv3_filters, self.conv3_kernel_shape, padding = self.padding3, activation=self.conv3_activation)(conv2)
-            #conv3 = self.tfaugmented_conv2d(norm2, self.conv3_filters, self.conv3_kernel_shape, dk=self.depth_k, dv=self.depth_v, Nh=self.num_heads, relative=self.relative)
-            #norm3 = BatchNormalization(axis = -1)(conv3)
             
             flat = Flatten()(conv3)
             dense = Dense(self.dense_nodes, activation=self.dense_activation)(flat)

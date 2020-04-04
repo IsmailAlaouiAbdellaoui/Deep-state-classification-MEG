@@ -1,10 +1,10 @@
-import sys
 import h5py
 import boto3
 import shutil
 import os.path as op
 import numpy as np
-import os
+from os.path import isdir
+from os import mkdir,makedirs,getcwd
 import mne
 import reading_raw
 import gc
@@ -25,10 +25,6 @@ def closestNumber(n, m) :
     return n2 
 
 
-def show_octet_size_file(filename):
-  with open(filename,'rb') as f:
-      input_stream = f.read()
-      print(len(input_stream))
       
 #Reads the binary file given the subject and the type of state
 #If the reading is successful, returns the matrix of size (248,number_time_steps)
@@ -47,89 +43,37 @@ def get_raw_data(subject, type_state, hcp_path):
     print("Exception error : ",e)
     return False
 
-#Generic function that returns information about any matrix
-#Used to make sure that compression is lossless
-def get_info_matrix(matrix):
-  print("shape of matrix: ",matrix.shape)
-  print("data type of matrix: ",matrix.dtype)
-  print("byte size of matrix data type: ", sys.getsizeof(matrix.dtype))
-  byte_size = sys.getsizeof(matrix)
-  print("byte size of matrix : ",byte_size)
-  mean = np.mean(matrix)
-  maximum = np.max(matrix)
-  print("mean of matrix: ",mean)
-  print("max of matrix: ", maximum)
-  return byte_size,mean,maximum
-  
-#Generic function that returns information about the matrix of any h5 file
-def get_info_h5_file(h5_file_name):
-  hf = h5py.File(h5_file_name, 'r')
-  temp = h5_file_name.split('.') # we assume here that the dataset name is the same as the file name, except the extension
-  dataset_name = temp[0]
-  matrix = hf.get(dataset_name)
-  matrix = np.array(matrix)
-  print("Shape of uncompressed h5 matrix: ",matrix.shape)
-  byte_size_matrix = sys.getsizeof(matrix)
-  print("byte size of uncompressed h5 matrix: ", byte_size_matrix)
-  mean_reading = np.mean(matrix)
-  max_reading = np.max(matrix)
-  print("mean of matrix: ",mean_reading)
-  print("max of matrix: ", max_reading)
-  hf.close()
-  return byte_size_matrix, mean_reading, max_reading
 
-#Function to compare the output matrix of a h5 file with the original binary matrix output of read_raw() function
-#Used to make sure that compression is lossless
-def compare_raw_h5(matrix_raw_data,h5_file_name):
-  byte_size_raw, mean_raw, max_raw = get_info_matrix(matrix_raw_data)
-  byte_size_h5, mean_h5, max_h5 = get_info_h5_file(h5_file_name)
-  print("difference in means: ", mean_raw - mean_h5)
-  print("difference in maxes: ", max_raw - max_h5)
-  print("difference in byte sizes: ", byte_size_raw - byte_size_h5)
-  
-  
-#Reads a h5 file and returns the matrix inside of it as a numpy matrix
-#We assume there is only 1 dataset per h5 file and the dataset name has the same name of the file name
-#See https://www.christopherlovell.co.uk/blog/2016/04/27/h5py-intro.html for more info on how h5 files work
-def get_h5_file(h5_file_name,verbose=False):
-  if(verbose):
-      print("Uncompressing and Reading the file {}".format(h5_file_name))
-  hf = h5py.File(h5_file_name, 'r')
-  temp = h5_file_name.split('.') # we assume here that the dataset name is the same as the file name, except the extension
-  dataset_name = temp[0]
-  matrix = hf.get(dataset_name)
-  matrix = np.array(matrix)
-  return matrix
 
 def create_data_directory():
     print("Creating data directory or skipping if already existing...")
-    if(not os.path.isdir("Data")):
+    if(not isdir("Data")):
         try:
-            os.mkdir("Data") 
+            mkdir("Data") 
             print("Created Data folder !")
         except Exception as e:
             print ("Creation of the Data directory failed")
             print("Exception error: ",str(e))
             
-    if(not os.path.isdir("Data/train")):
+    if(not isdir("Data/train")):
         try:
-            os.mkdir("Data/train")    
+            mkdir("Data/train")    
             print("Created train folder !")
         except Exception as e:
             print ("Creation of the train directory failed")
             print("Exception error: ",str(e))
             
-    if(not os.path.isdir("Data/validate")):
+    if(not isdir("Data/validate")):
         try:
-            os.mkdir("Data/validate")  
+            mkdir("Data/validate")  
             print("Created validate folder !")
         except Exception as e:
             print ("Creation of the validate directory failed")
             print("Exception error: ",str(e))
             
-    if(not os.path.isdir("Data/test")):
+    if(not isdir("Data/test")):
         try:
-            os.mkdir("Data/test")    
+            mkdir("Data/test")    
             print("Created test folder !")
         except Exception as e:
             print ("Creation of the test directory failed")
@@ -144,7 +88,9 @@ def create_h5_files(raw_matrix,subject,type_state):
     validate_folder = "Data/validate/"
     test_folder = "Data/test/"
     
-    number_columns = 250 * 1425
+    number_epochs = 250
+    time_steps_per_epoch = 1425
+    number_columns = number_epochs * time_steps_per_epoch
 
     number_columns_per_chunk = number_columns // 10
 
@@ -224,9 +170,9 @@ def download_subject(subject,personal_access_key_id,secret_access_key):
 
   print("Creating the directories for the subject '{}'".format(subject))
   print()
-  if op.exists(os.getcwd()+"//"+subject) == False:
+  if op.exists(getcwd()+"//"+subject) == False:
     for folder in folders:
-        os.makedirs(subject+"/unprocessed/MEG/"+folder+"/4D/")
+        makedirs(subject+"/unprocessed/MEG/"+folder+"/4D/")
   print("done !")
   print()
   print("Will start downloading the following files for all folders:")
@@ -239,7 +185,7 @@ def download_subject(subject,personal_access_key_id,secret_access_key):
       if filename == "c,rfDC":
         print("downloading c,rfDC file for folder {} ...".format(folder))
         print()
-      if(op.exists(os.getcwd()+"//"+subject+'/unprocessed/MEG/'+folder+'/4D/'+filename)):
+      if(op.exists(getcwd()+"//"+subject+'/unprocessed/MEG/'+folder+'/4D/'+filename)):
         print("File already exists, moving on ...")
         print()
         pass
@@ -310,7 +256,6 @@ def orderer_shuffling(rest_list,mem_list,math_list,motor_list):
     return ordered_list
       
 
-
 def get_lists_indexes(matrix_length,window_size):
     indexes=[]
     for i in range(window_size):
@@ -324,7 +269,7 @@ def get_input_lists(matrix,indexes,window_size):
     del matrix
     return inputs
 
-def normalize_matrix(matrix):
+def min_max_scale(matrix):
     max,min = matrix.max(),matrix.min()
     return (matrix-min)/(max-min)
 
@@ -335,7 +280,7 @@ def get_dataset_name(file_name_with_dir):
     return dataset_name
 
 def preprocess_data_type(matrix, window_size):
-    matrix = normalize_matrix(matrix)
+    matrix = min_max_scale(matrix)
 
     if(matrix.shape[1] == 1):
         length = 1
@@ -357,7 +302,7 @@ def preprocess_data_type(matrix, window_size):
     return inputs, y
 
 def preprocess_data_type_lstm(matrix,window_size):
-    matrix = normalize_matrix(matrix)
+    matrix = min_max_scale(matrix)
 
     if(matrix.shape[1] == 1):
         length = 1
@@ -500,7 +445,7 @@ def load_overlapped_data_cascade(file_dirs):
         for j in range(window_size):
             temp = inputs[j][i]
             inside = temp[:,:,0]
-            norm = normalize_matrix(inside)
+            norm = min_max_scale(inside)
             inputs[j][i][:,:,0] = norm
 
     temp = None
@@ -638,12 +583,12 @@ def load_overlapped_data_multiview(file_dirs):
         for j in range(window_size):
             temp = inputs[j][i]
             inside = temp[:,:,0]
-            norm = normalize_matrix(inside)
+            norm = min_max_scale(inside)
             inputs[j][i][:,:,0] = norm
 
             temp = inputs[j+window_size][i]
             inside = temp[:,0]
-            norm = normalize_matrix(inside)
+            norm = min_max_scale(inside)
             inputs[j+window_size][i][:,0] = norm
 
     del temp
