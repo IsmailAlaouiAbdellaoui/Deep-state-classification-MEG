@@ -72,7 +72,7 @@ def get_multiview_model():
     return multiview_model, multiview_object
 
 def get_multiview_model_attention():
-    multiview_attention_object = MutiviewAttention(window_size,conv1_filters,conv2_filters,conv3_filters,
+    multiview_attention_object = MultiviewAttention(window_size,conv1_filters,conv2_filters,conv3_filters,
              conv1_kernel_shape,conv2_kernel_shape,conv3_kernel_shape,
              padding1,padding2,padding3,conv1_activation,conv2_activation,
              conv3_activation,dense_nodes,dense_activation,
@@ -264,7 +264,7 @@ parser.add_argument('-s', '--setup', type=int, help="Please select a number betw
                     0 and 4 to choose the setup of the training")
 
 parser.add_argument('-m','--model', type=str,help="Please choose the type of model \
-                    you want to train (cascade or mutiview)",choices=['cascade', 'mutiview'])
+                    you want to train (cascade or multiview)",choices=['cascade', 'multiview'])
 
 parser.add_argument('-a','--attention',type=bool,help="Please choose whether you \
                     want to use self attention (True or False), by default no attention", default=False)
