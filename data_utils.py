@@ -266,7 +266,7 @@ def multi_processing_cascade(directory, length, num_cpu):
 
     pool = Pool(num_cpu)
     
-    results = pool.map(utils.load_overlapped_data_cascade, split)
+    results = pool.map(load_overlapped_data_cascade, split)
     pool.terminate()
     pool.join()
     
@@ -298,7 +298,7 @@ def multi_processing_multiview(directory, length, num_cpu):
         split.append(directory[i*length:(i*length)+length])
 
     pool = Pool(num_cpu)
-    results = pool.map(utils.load_overlapped_data_multiview, split)
+    results = pool.map(load_overlapped_data_multiview, split)
     pool.terminate()
     pool.join()
 
