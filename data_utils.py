@@ -254,6 +254,78 @@ def orderer_shuffling(rest_list,mem_list,math_list,motor_list):
         ordered_list.append(value3)
         ordered_list.append(value4)
     return ordered_list
+
+def multi_processing_cascade(directory, length, num_cpu):
+    assert len(directory) == length*num_cpu,"Directory does not have {} files.".format(length*num_cpu)
+    window_size = 10
+    split = []
+
+    for i in range(num_cpu):
+        split.append(directory[i*length:(i*length)+length])
+
+    pool = Pool(num_cpu)
+    
+    results = pool.map(utils.load_overlapped_data_cascade, split)
+    pool.terminate()
+    pool.join()
+    
+    y = np.random.rand(1,4)
+    for i in range(len(results)):
+        y = np.concatenate((y,results[i][1]))
+
+    y = np.delete(y,0,0)
+    gc.collect()
+    
+    x={}
+
+    x_temp = np.random.rand(1,20,21,1)
+    for i in range(window_size):
+        for j in range(len(results)):
+            x_temp = np.concatenate((x_temp,results[j][0]["input"+str(i+1)]))
+        x_temp= np.delete(x_temp,0,0)
+        x["input"+str(i+1)] = x_temp
+        x_temp = np.random.rand(1,20,21,1)
+        gc.collect()
+    return x, y
+
+def multi_processing_multiview(directory, length, num_cpu):
+    assert len(directory) == length*num_cpu,"Directory does not have {} files.".format(length*num_cpu)
+    window_size = 10
+    split = []
+
+    for i in range(num_cpu):
+        split.append(directory[i*length:(i*length)+length])
+
+    pool = Pool(num_cpu)
+    results = pool.map(utils.load_overlapped_data_multiview, split)
+    pool.terminate()
+    pool.join()
+
+    y = np.random.rand(1,4)
+    for i in range(len(results)):
+        y = np.concatenate((y,results[i][1]))
+
+    y = np.delete(y,0,0)
+    gc.collect()
+    
+    x={}
+
+    x_temp = np.random.rand(1,20,21,1)
+    x_lstm = np.random.rand(1,248,1)
+    for i in range(window_size):
+        for j in range(len(results)):
+            x_temp = np.concatenate((x_temp,results[j][0]["input"+str(i+1)]))
+            x_lstm = np.concatenate((x_lstm,results[j][0]["input"+str(i+window_size+1)]))
+
+        x_temp= np.delete(x_temp,0,0)
+        x_lstm= np.delete(x_lstm,0,0)
+        x["input"+str(i+1)] = x_temp
+        x["input"+str(i+window_size+1)] = x_lstm
+        x_temp = np.random.rand(1,20,21,1)
+        x_lstm = np.random.rand(1,248,1)
+        gc.collect()
+
+    return x, y
       
 
 def get_lists_indexes(matrix_length,window_size):

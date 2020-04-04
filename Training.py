@@ -150,12 +150,22 @@ def train(model_type,use_attention,setup,num_epochs):
                     subject_files_val.append(item)
             number_workers_training = 16
             number_files_per_worker = len(subject_files_train)//number_workers_training
-            X_train, Y_train = eutils.multi_processing(subject_files_train,number_files_per_worker,number_workers_training,model_type)            
+
+            if model_type == 'Cascade':
+                X_train, Y_train = utils.multi_processing_cascade(subject_files_train,number_files_per_worker,number_workers_training)            
+            elif model_type == 'Multiview':
+                X_train, Y_train = utils.multi_processing_multiview(subject_files_train,number_files_per_worker,number_workers_training)            
+
             X_train,Y_train = utils.reshape_input_dictionary(X_train, Y_train, batch_size)
 
             number_workers_validation = 8
             number_files_per_worker = len(subject_files_val)//number_workers_validation
-            X_validate, Y_validate = eutils.multi_processing(subject_files_val,number_files_per_worker,number_workers_validation,model_type)            
+            
+            if model_type == 'Cascade':
+                X_validate, Y_validate = utils.multi_processing_cascade(subject_files_train,number_files_per_worker,number_workers_training)            
+            elif model_type == 'Multiview':
+                X_validate, Y_validate = utils.multi_processing_multiview(subject_files_train,number_files_per_worker,number_workers_training)            
+            
             X_validate, Y_validate.reshape_input_dictionary(X_validate, Y_validate, batch_size)
             
             history = model.fit(X_train, Y_train, batch_size = batch_size, epochs = 1, 
