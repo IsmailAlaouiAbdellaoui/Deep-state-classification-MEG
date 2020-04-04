@@ -8,7 +8,7 @@ from tensorflow.keras.optimizers import Adam
 
 from CascadeAttention import CascadeAttention
 from Cascade import Cascade
-from MutiviewAttention import MutiviewAttention
+from MultiviewAttention import MutliviewAttention
 from Multiview import Multiview
 
 
