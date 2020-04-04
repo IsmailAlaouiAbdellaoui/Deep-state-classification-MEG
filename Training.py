@@ -166,7 +166,7 @@ def train(model_type,use_attention,setup,num_epochs):
             elif model_type == 'Multiview':
                 X_validate, Y_validate = utils.multi_processing_multiview(subject_files_val,number_files_per_worker,number_workers_validation)            
             
-            X_validate, Y_validate.reshape_input_dictionary(X_validate, Y_validate, batch_size)
+            X_validate, Y_validate = utils.reshape_input_dictionary(X_validate, Y_validate, batch_size)
             
             history = model.fit(X_train, Y_train, batch_size = batch_size, epochs = 1, 
                                     verbose = 1, validation_data=(X_validate, Y_validate), 
