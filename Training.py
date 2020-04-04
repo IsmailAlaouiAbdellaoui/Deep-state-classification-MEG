@@ -133,7 +133,7 @@ def train(model_type,use_attention,setup,num_epochs):
 
     model.compile(optimizer = Adam(learning_rate=0.0001), loss="categorical_crossentropy", metrics=["accuracy"])
     
-    experiment_number = eutils.on_train_begin(model_object,model_type,model_type)
+    experiment_number = eutils.on_train_begin(model_object,model_type)
     for epoch in range(num_epochs):
         print("\n\n Epoch",epoch+1," \n")
         for subject in subjects:
