@@ -118,7 +118,7 @@ def create_info_epochs_file(experiment_number,model_type):
 
 def on_train_begin(model_object,model_type):
     create_main_experiment_folder()
-    create_model_folder()
+    create_model_folder(model_type)
     experiment_number = get_experiment_number()
     create_experiment_folder(experiment_number)
     print()
