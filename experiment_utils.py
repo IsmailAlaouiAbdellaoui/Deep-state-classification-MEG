@@ -119,18 +119,18 @@ def create_info_epochs_file(experiment_number,model_type):
 def on_train_begin(model_object,model_type):
     create_main_experiment_folder()
     create_model_folder(model_type)
-    experiment_number = get_experiment_number()
-    create_experiment_folder(experiment_number)
+    experiment_number = get_experiment_number(model_type)
+    create_experiment_folder(experiment_number,model_type)
     print()
     print()
     print("-"*7 +" Beginning of Experiment {} of the {} model ".format(experiment_number,model_type) + "-"*7)            
     print()
     print()
     # self.create_experiment_folder(self.experiment_number)
-    create_summary_file(experiment_number)
-    append_to_summary_file(model_object, experiment_number)
-    create_info_epochs_file(experiment_number)
-    create_info_test_file(experiment_number)
+    create_summary_file(experiment_number,model_type)
+    append_to_summary_file(model_object, experiment_number,model_type)
+    create_info_epochs_file(experiment_number,model_type)
+    create_info_test_file(experiment_number,model_type)
     return experiment_number
 
 def on_train_end(experiment_number):
