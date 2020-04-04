@@ -1,5 +1,4 @@
 import time
-import numpy as np
 import gc
 
 import experiment_utils as eutils
@@ -151,50 +150,13 @@ def train(model_type,use_attention,setup,num_epochs):
                     subject_files_val.append(item)
             number_workers_training = 16
             number_files_per_worker = len(subject_files_train)//number_workers_training
-            X_train, Y_train = eutils.multi_processing(subject_files_train,number_files_per_worker,number_workers_training,model_type)
-            length_training = Y_train.shape[0]
-            length_adapted_batch_size= utils.closestNumber(length_training-batch_size,batch_size)
-            input1 = np.reshape(X_train['input1'][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
-            input2 = np.reshape(X_train['input2'][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
-            input3 = np.reshape(X_train['input3'][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
-            input4 = np.reshape(X_train['input4'][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
-            input5 = np.reshape(X_train['input5'][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
-            input6 = np.reshape(X_train['input6'][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
-            input7 = np.reshape(X_train['input7'][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
-            input8 = np.reshape(X_train['input8'][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
-            input9 = np.reshape(X_train['input9'][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
-            input10 = np.reshape(X_train['input10'][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
-            X_train = {'input1' : input1,'input2' : input2,'input3' : input3, 'input4': input4,'input5':input5,'input6' : input6,'input7' : input7,'input8' : input8, 'input9': input9,'input10':input10}
-            Y_train = Y_train[0:length_adapted_batch_size]
+            X_train, Y_train = eutils.multi_processing(subject_files_train,number_files_per_worker,number_workers_training,model_type)            
+            X_train,Y_train = utils.reshape_input_dictionary(X_train, Y_train, batch_size)
 
             number_workers_validation = 8
             number_files_per_worker = len(subject_files_val)//number_workers_validation
-            X_validate, Y_validate = eutils.multi_processing(subject_files_val,number_files_per_worker,number_workers_validation,model_type)
-            length_validate = Y_validate.shape[0]
-            length_adapted_batch_size = utils.closestNumber(length_validate-batch_size,batch_size)
-            input1 = np.reshape(X_validate['input1'][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
-            input2 = np.reshape(X_validate['input2'][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
-            input3 = np.reshape(X_validate['input3'][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
-            input4 = np.reshape(X_validate['input4'][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
-            input5 = np.reshape(X_validate['input5'][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
-            input6 = np.reshape(X_validate['input6'][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
-            input7 = np.reshape(X_validate['input7'][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
-            input8 = np.reshape(X_validate['input8'][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
-            input9 = np.reshape(X_validate['input9'][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
-            input10 = np.reshape(X_validate['input10'][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
-            X_validate = {'input1' : input1,'input2' : input2,'input3' : input3, 'input4': input4,'input5':input5,'input6' : input6,'input7' : input7,'input8' : input8, 'input9': input9,'input10':input10}
-            Y_validate = Y_validate[0:length_adapted_batch_size]
-            
-            input1 = None
-            input2 = None
-            input3 = None
-            input4 = None
-            input5 = None
-            input6 = None
-            input7 = None
-            input8 = None
-            input9 = None
-            input10 = None
+            X_validate, Y_validate = eutils.multi_processing(subject_files_val,number_files_per_worker,number_workers_validation,model_type)            
+            X_validate, Y_validate.reshape_input_dictionary(X_validate, Y_validate, batch_size)
             
             history = model.fit(X_train, Y_train, batch_size = batch_size, epochs = 1, 
                                     verbose = 1, validation_data=(X_validate, Y_validate), 

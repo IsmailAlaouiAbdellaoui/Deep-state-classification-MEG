@@ -329,7 +329,6 @@ def reshape_input_dictionary(input_dict, output_list, batch_size):
     length_adapted_batch_size= closestNumber(length_training-batch_size,batch_size)
 
     for i in range(len(input_dict.keys())):
-
         if i < 10:
             input_dict["input"+str(i+1)] = np.reshape(input_dict["input"+str(i+1)][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
         else:
