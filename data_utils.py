@@ -10,6 +10,7 @@ import reading_raw
 import gc
 from sklearn.utils import shuffle
 from tensorflow.keras.utils import to_categorical
+from multiprocessing import Pool
 
 #Given the number "n", it finds the closest that is divisible by "m"
 #Used when splitting the matrices
