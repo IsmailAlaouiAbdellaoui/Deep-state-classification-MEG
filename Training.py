@@ -162,9 +162,9 @@ def train(model_type,use_attention,setup,num_epochs):
             number_files_per_worker = len(subject_files_val)//number_workers_validation
             
             if model_type == 'Cascade':
-                X_validate, Y_validate = utils.multi_processing_cascade(subject_files_train,number_files_per_worker,number_workers_training)            
+                X_validate, Y_validate = utils.multi_processing_cascade(subject_files_val,number_files_per_worker,number_workers_validation)            
             elif model_type == 'Multiview':
-                X_validate, Y_validate = utils.multi_processing_multiview(subject_files_train,number_files_per_worker,number_workers_training)            
+                X_validate, Y_validate = utils.multi_processing_multiview(subject_files_val,number_files_per_worker,number_workers_validation)            
             
             X_validate, Y_validate.reshape_input_dictionary(X_validate, Y_validate, batch_size)
             
