@@ -1,8 +1,4 @@
-from os import listdir
-from os.path import isfile, join
 import numpy as np
-import data_utils as utils
-import gc
 import os
 import re
 import matplotlib.pyplot as plt
@@ -115,14 +111,17 @@ def create_info_epochs_file(experiment_number,model_type):
         with open(filename, "w") as file:
             file.write("")
 
-def on_train_begin(model_object,model_type):
+def on_train_begin(model_object,model_type,use_attention, setup):
     create_main_experiment_folder()
     create_model_folder(model_type)
     experiment_number = get_experiment_number(model_type)
     create_experiment_folder(experiment_number,model_type)
     print()
     print()
-    print("-"*7 +" Beginning of Experiment {} of the {} model ".format(experiment_number,model_type) + "-"*7)            
+    if use_attention: 
+        print("-"*7 +" Beginning of Experiment {} of the {} model using Self Attention and training setup {}.".format(experiment_number,model_type,setup) + "-"*7)     
+    else:
+        print("-"*7 +" Beginning of Experiment {} of the {} model without Attention and training setup {}.".format(experiment_number,model_type,setup) + "-"*7)
     print()
     print()
     # self.create_experiment_folder(self.experiment_number)
@@ -146,11 +145,13 @@ def save_training_time(experiment_number,time,model_type):
     with open(filename, "a+") as file:
         file.write("\n\nTraining time: {:.2f} seconds".format(time))
 
-def write_comment(experiment_number,comment,model_type):
+def write_comment(experiment_number,comment,model_type,setup,use_attention):
     filename = "Experiments/"+model_type+"/Experiment"+str(experiment_number)+"/summary_model"+str(experiment_number)+".txt"
     with open(filename, "a+") as file:
-        file.write("\nAttention model, comment :  {}".format(comment))
-##################### Add whether its an attention
+        file.write("\nModel used : {}".format(model_type))
+        file.write("\nSelf Attention: {}".format(str(use_attention)))
+        file.write("\nSubjects used: {}".format(comment))
+
 
 
 def on_epoch_end(epoch, accuracy, loss, val_accuracy, val_loss,experiment_number,model,model_type):
@@ -203,36 +204,11 @@ def create_info_test_file(experiment_number,model_type):
 def append_individual_test(experiment_number,epoch_number,subject,testing_accuracy,model_type):
     filename = "Experiments/"+model_type+"/Experiment"+str(experiment_number)+"/info_test_model"+str(experiment_number)+".txt"
     with open(filename, "a+") as file:
-        file.write("\nEpoch {0},test for subject '{1}',testing_accuracy:{2:.2f}".format(epoch_number,subject,testing_accuracy))
+        file.write("\nEpoch {0}, Test for subject '{1}', Testing_accuracy:{2:.2f}".format(epoch_number,subject,testing_accuracy))
 
 def append_average_test(experiment_number,epoch_number,testing_accuracy,model_type):
     filename = "Experiments/"+model_type+"/Experiment"+str(experiment_number)+"/info_test_model"+str(experiment_number)+".txt"
     with open(filename, "a+") as file:
-        file.write("\nEpoch {0},average_testing_accuracy:{1:.2f}\n\n".format(epoch_number,testing_accuracy))
+        file.write("\nEpoch {0}, Average testing accuracy:{1:.2f}\n\n".format(epoch_number,testing_accuracy))
 
 
-training_file_dir = "Data/train"
-all_train_files = [f for f in listdir(training_file_dir) if isfile(join(training_file_dir, f))]
-train_files_dirs = []
-for i in range(len(all_train_files)):
-    train_files_dirs.append(training_file_dir+'/'+all_train_files[i])
-rest_list, mem_list, math_list, motor_list = utils.separate_list(train_files_dirs)
-train_files_dirs = utils.orderer_shuffling(rest_list, mem_list, math_list, motor_list)
-
-
-validation_file_dir = "Data/validate"
-all_validate_files = [f for f in listdir(validation_file_dir) if isfile(join(validation_file_dir, f))]
-validate_files_dirs = []
-for i in range(len(all_validate_files)):
-    validate_files_dirs.append(validation_file_dir+'/'+all_validate_files[i])
-rest_list, mem_list, math_list, motor_list = utils.separate_list(validate_files_dirs)
-validate_files_dirs = utils.orderer_shuffling(rest_list, mem_list, math_list, motor_list)
-
-
-test_file_dir = "Data/test"
-all_test_files = [f for f in listdir(test_file_dir) if isfile(join(test_file_dir, f))]
-test_files_dirs = []
-for i in range(len(all_test_files)):
-    test_files_dirs.append(test_file_dir+'/'+all_test_files[i])
-rest_list, mem_list, math_list, motor_list = utils.separate_list(test_files_dirs)
-test_files_dirs = utils.orderer_shuffling(rest_list, mem_list, math_list, motor_list)

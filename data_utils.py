@@ -1,16 +1,18 @@
 import h5py
 import boto3
 import shutil
-import os.path as op
 import numpy as np
-from os.path import isdir
-from os import mkdir,makedirs,getcwd
+from os.path import isdir,isfile,join,exists
+from os import mkdir,makedirs,getcwd,listdir
 import mne
 import reading_raw
 import gc
 from sklearn.utils import shuffle
 from tensorflow.keras.utils import to_categorical
 from multiprocessing import Pool
+
+
+
 
 #Given the number "n", it finds the closest that is divisible by "m"
 #Used when splitting the matrices
@@ -171,7 +173,7 @@ def download_subject(subject,personal_access_key_id,secret_access_key):
 
   print("Creating the directories for the subject '{}'".format(subject))
   print()
-  if op.exists(getcwd()+"//"+subject) == False:
+  if exists(getcwd()+"//"+subject) == False:
     for folder in folders:
         makedirs(subject+"/unprocessed/MEG/"+folder+"/4D/")
   print("done !")
@@ -186,7 +188,7 @@ def download_subject(subject,personal_access_key_id,secret_access_key):
       if filename == "c,rfDC":
         print("downloading c,rfDC file for folder {} ...".format(folder))
         print()
-      if(op.exists(getcwd()+"//"+subject+'/unprocessed/MEG/'+folder+'/4D/'+filename)):
+      if(exists(getcwd()+"//"+subject+'/unprocessed/MEG/'+folder+'/4D/'+filename)):
         print("File already exists, moving on ...")
         print()
         pass
@@ -247,7 +249,7 @@ def separate_list(all_files_list):
             motor_list.append(item)            
     return rest_list, mem_list, math_list, motor_list
 
-def orderer_shuffling(rest_list,mem_list,math_list,motor_list):
+def order_arranging(rest_list,mem_list,math_list,motor_list):
     ordered_list = []
     for index, (value1, value2, value3, value4) in enumerate(zip(rest_list, mem_list, math_list, motor_list)):
         ordered_list.append(value1)
@@ -1000,4 +1002,31 @@ def array_to_mesh(arr):
     output[19][10] = arr[0][237]
     
     return output
+
+
+training_file_dir = "Data/train"
+all_train_files = [f for f in listdir(training_file_dir) if isfile(join(training_file_dir, f))]
+train_files_dirs = []
+for i in range(len(all_train_files)):
+    train_files_dirs.append(training_file_dir+'/'+all_train_files[i])
+rest_list, mem_list, math_list, motor_list = separate_list(train_files_dirs)
+train_files_dirs = order_arranging(rest_list, mem_list, math_list, motor_list)
+
+
+validation_file_dir = "Data/validate"
+all_validate_files = [f for f in listdir(validation_file_dir) if isfile(join(validation_file_dir, f))]
+validate_files_dirs = []
+for i in range(len(all_validate_files)):
+    validate_files_dirs.append(validation_file_dir+'/'+all_validate_files[i])
+rest_list, mem_list, math_list, motor_list = separate_list(validate_files_dirs)
+validate_files_dirs = order_arranging(rest_list, mem_list, math_list, motor_list)
+
+
+test_file_dir = "Data/test"
+all_test_files = [f for f in listdir(test_file_dir) if isfile(join(test_file_dir, f))]
+test_files_dirs = []
+for i in range(len(all_test_files)):
+    test_files_dirs.append(test_file_dir+'/'+all_test_files[i])
+rest_list, mem_list, math_list, motor_list = separate_list(test_files_dirs)
+test_files_dirs = order_arranging(rest_list, mem_list, math_list, motor_list)
 

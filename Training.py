@@ -134,19 +134,19 @@ def train(model_type,use_attention,setup,num_epochs):
 
     model.compile(optimizer = Adam(learning_rate=0.0001), loss="categorical_crossentropy", metrics=["accuracy"])
     
-    experiment_number = eutils.on_train_begin(model_object,model_type)
+    experiment_number = eutils.on_train_begin(model_object,model_type,use_attention,setup)
     for epoch in range(num_epochs):
         print("\n\n Epoch",epoch+1)
         for subject in subjects:
             start_subject_time = time.time()
             print("\n\nTraining on subject", subject)
             subject_files_train = []
-            for item in eutils.train_files_dirs:
+            for item in utils.train_files_dirs:
                 if subject in item:
                     subject_files_train.append(item)
             
             subject_files_val = []
-            for item in eutils.validate_files_dirs:
+            for item in utils.validate_files_dirs:
                 if subject in item:
                     subject_files_val.append(item)
             number_workers_training = 16
@@ -222,7 +222,7 @@ def train(model_type,use_attention,setup,num_epochs):
                 start_testing = time.time()
                 print("\nTesting on subject", subject)
                 subject_files_test = []
-                for item in eutils.test_files_dirs:
+                for item in utils.test_files_dirs:
                     if subject in item:
                         subject_files_test.append(item)
                             
@@ -238,12 +238,12 @@ def train(model_type,use_attention,setup,num_epochs):
                 
                 accuracies_temp.append(result[1])
                 print("Recording the testing accuracy of '{}' in a file".format(subject))
-                eutils.append_individual_test(experiment_number,epoch,subject,result[1],model_type)
+                eutils.append_individual_test(experiment_number,epoch+1,subject,result[1],model_type)
                 print("Timespan of testing is : {}".format(time.time() - start_testing))
             avg = sum(accuracies_temp)/len(accuracies_temp)
             print("\n\nAverage testing accuracy : {0:.2f}".format(avg))
             print("Recording the average testing accuracy in a file")
-            eutils.append_average_test(experiment_number,epoch,avg,model_type)
+            eutils.append_average_test(experiment_number,epoch+1,avg,model_type)
 
             X_test = None
             Y_test = None
@@ -255,7 +255,7 @@ def train(model_type,use_attention,setup,num_epochs):
     print("training took {:.2f} seconds".format(time_span))
     eutils.on_train_end(experiment_number,model_type)
     eutils.save_training_time(experiment_number, time_span,model_type)
-    eutils.write_comment(experiment_number,comment,model_type)
+    eutils.write_comment(experiment_number,comment,model_type,setup,use_attention)
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -299,7 +299,6 @@ if args.epochs < 1:
     print("Invalid epoch number, exiting ...")
     sys.exit()
 
-print("Training of {} model {} attention mechanism will begin with {} epochs and training setup {}.".format(model_type,attention,args.epochs,args.setup))
 train(model_type,use_attention,args.setup,args.epochs)
     
 #Snippet might come useful later
