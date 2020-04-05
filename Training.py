@@ -295,12 +295,12 @@ if args.setup < 0 or args.setup > 3:
     print("Invalid setup number, exiting ...")
     sys.exit()
 
-if args.epochs < 0:
+if args.epochs < 1:
     print("Invalid epoch number, exiting ...")
     sys.exit()
 
 print("Training of {} model {} attention mechanism will begin with {} epochs and training setup {}.".format(model_type,attention,args.epochs,args.setup))
-train(model_type,use_attention,setup,args.epochs)
+train(model_type,use_attention,args.setup,args.epochs)
     
 #Snippet might come useful later
 #import tensorflow as tf
