@@ -136,7 +136,7 @@ def train(model_type,use_attention,setup,num_epochs):
     
     experiment_number = eutils.on_train_begin(model_object,model_type)
     for epoch in range(num_epochs):
-        print("\n\n Epoch",epoch+1," \n")
+        print("\n\n Epoch",epoch+1)
         for subject in subjects:
             start_subject_time = time.time()
             print("\n\nTraining on subject", subject)
@@ -178,9 +178,9 @@ def train(model_type,use_attention,setup,num_epochs):
             print("Model's weights saved, Epoch : {}, subject : {}".format(epoch+1,subject) )
             print("Timespan subject training is : {}".format(subj_train_timespan))
             history_dict = history.history
-            accuracies_temp_train.append(history_dict['acc'][0])#its because its a list of 1 element
+            accuracies_temp_train.append(history_dict['accuracy'][0])#its because its a list of 1 element
             losses_temp_train.append(history_dict['loss'][0])
-            accuracies_temp_val.append(history_dict['val_acc'][0])
+            accuracies_temp_val.append(history_dict['val_accuracy'][0])
             losses_temp_val.append(history_dict['val_loss'][0])
             #Freeing memory
             X_train = None
@@ -214,8 +214,7 @@ def train(model_type,use_attention,setup,num_epochs):
         eutils.on_epoch_end(epoch, average_accuracy_epoch_train, average_loss_epoch_train, \
                         average_accuracy_epoch_validate, average_loss_epoch_validate, experiment_number, model,model_type)
 
-        if (epoch+1) % 2 == 0 :
-#            start_testing = time.time()
+        if (epoch+1) % 2 == 0 or (epoch+1) == num_epochs:
             print("\n")
             accuracies_temp = []
             #Creating dataset for testing
@@ -224,8 +223,8 @@ def train(model_type,use_attention,setup,num_epochs):
                 print("\nTesting on subject", subject)
                 subject_files_test = []
                 for item in eutils.test_files_dirs:
-                        if subject in item:
-                            subject_files_test.append(item)
+                    if subject in item:
+                        subject_files_test.append(item)
                             
                 number_workers_testing = 10
                 number_files_per_worker = len(subject_files_test)//number_workers_testing
@@ -262,7 +261,7 @@ import argparse
 parser = argparse.ArgumentParser()
 
 parser.add_argument('-s', '--setup', type=int, help="Please select a number between \
-                    0 and 4 to choose the setup of the training")
+                    0 and 3 to choose the setup of the training", default=0)
 
 parser.add_argument('-m','--model', type=str,help="Please choose the type of model \
                     you want to train (cascade or multiview)",choices=['cascade', 'multiview'])
@@ -288,23 +287,20 @@ else:
 if args.attention == True:
     use_attention = True
     attention = "with"
-elif args.attention == False:
-    use_attention = False
-    attention = "without"
 else:
-    print("Attention mechanism is not specified.")
     use_attention = False
     attention = "without"
 
-if args.setup:
-    setup = args.setup
-else:
-    print("No training setup has been chosen, basic training will start.")
-    setup = 0
+if args.setup < 0 or args.setup > 3:
+    print("Invalid setup number, exiting ...")
+    sys.exit()
 
-epochs = args.epochs
-print("Training of {} model {} attention mechanism will begin with {} epochs and training setup {}.".format(model_type,attention,epochs,setup))
-train(model_type,use_attention,setup,epochs)
+if args.epochs < 0:
+    print("Invalid epoch number, exiting ...")
+    sys.exit()
+
+print("Training of {} model {} attention mechanism will begin with {} epochs and training setup {}.".format(model_type,attention,args.epochs,args.setup))
+train(model_type,use_attention,setup,args.epochs)
     
 #Snippet might come useful later
 #import tensorflow as tf
@@ -323,7 +319,3 @@ train(model_type,use_attention,setup,epochs)
     
     
 #To do for refactoring:
-
-
-    
-       
