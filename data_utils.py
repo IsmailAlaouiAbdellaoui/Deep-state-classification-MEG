@@ -27,8 +27,7 @@ def closestNumber(n, m) :
         return n1 
     return n2 
 
-
-      
+     
 #Reads the binary file given the subject and the type of state
 #If the reading is successful, returns the matrix of size (248,number_time_steps)
 #If the reading is NOT successful, prints the problem and returns the boolean False
