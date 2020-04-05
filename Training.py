@@ -9,7 +9,7 @@ from tensorflow.keras.optimizers import Adam
 
 from CascadeAttention import CascadeAttention
 from Cascade import Cascade
-from MultiviewAttention import MutliviewAttention
+from MultiviewAttention import MultiviewAttention
 from Multiview import Multiview
 
 
@@ -304,8 +304,7 @@ else:
     setup = 0
 
 epochs = args.epochs
-print("Training of {} model {} attention mechanism will begin with {} epochs and setup {}.".format(args.model_type,args.a,,args.setup))
-    
+print("Training of {} model {} attention mechanism will begin with {} epochs and setup {}.".format(model_type,attention,epochs,setup))
 train(model_type,use_attention,setup,epochs)
     
 #Snippet might come useful later
