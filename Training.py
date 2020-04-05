@@ -139,7 +139,7 @@ def train(model_type,use_attention,setup,num_epochs):
         print("\n\n Epoch",epoch+1," \n")
         for subject in subjects:
             start_subject_time = time.time()
-            print("-- Training on subject", subject)
+            print("\n\nTraining on subject", subject)
             subject_files_train = []
             for item in eutils.train_files_dirs:
                 if subject in item:
@@ -189,11 +189,9 @@ def train(model_type,use_attention,setup,num_epochs):
             Y_validate = None
             gc.collect()
         
-        print("Epoch {:03d}".format(epoch))
-
         ## Training Information ##
         average_loss_epoch_train = sum(losses_temp_train)/len(losses_temp_train)
-        print("Epoch Training Loss : {:.3f}".format(average_loss_epoch_train))
+        print("\n\nEpoch Training Loss : {:.3f}".format(average_loss_epoch_train))
         losses_train.append(average_loss_epoch_train)
         losses_temp_train = []
 
@@ -218,12 +216,12 @@ def train(model_type,use_attention,setup,num_epochs):
 
         if (epoch+1) % 2 == 0 :
 #            start_testing = time.time()
-            print("Testing on subjects")
+            print("\n")
             accuracies_temp = []
             #Creating dataset for testing
             for subject in list_subjects_test:
                 start_testing = time.time()
-                print("Reading data from subject", subject)
+                print("\nTesting on subject", subject)
                 subject_files_test = []
                 for item in eutils.test_files_dirs:
                         if subject in item:
@@ -231,10 +229,12 @@ def train(model_type,use_attention,setup,num_epochs):
                             
                 number_workers_testing = 10
                 number_files_per_worker = len(subject_files_test)//number_workers_testing
-                print(number_files_per_worker)
-                X_test, Y_test = eutils.multi_processing(subject_files_test,number_files_per_worker,number_workers_testing,model_type)
 
-                print("\n\nEvaluation cross-subject: ")
+                if model_type == 'Cascade':
+                    X_test, Y_test = utils.multi_processing_cascade(subject_files_test,number_files_per_worker,number_workers_testing)
+                elif model_type == 'Multiview':
+                    X_test, Y_test = utils.multi_processing_multiview(subject_files_test,number_files_per_worker,number_workers_testing)
+            
                 result = model.evaluate(X_test, Y_test, batch_size = batch_size,verbose=2)
                 
                 accuracies_temp.append(result[1])
@@ -242,7 +242,7 @@ def train(model_type,use_attention,setup,num_epochs):
                 eutils.append_individual_test(experiment_number,epoch,subject,result[1],model_type)
                 print("Timespan of testing is : {}".format(time.time() - start_testing))
             avg = sum(accuracies_temp)/len(accuracies_temp)
-            print("Average testing accuracy : {0:.2f}".format(avg))
+            print("\n\nAverage testing accuracy : {0:.2f}".format(avg))
             print("Recording the average testing accuracy in a file")
             eutils.append_average_test(experiment_number,epoch,avg,model_type)
 
@@ -293,18 +293,17 @@ elif args.attention == False:
     attention = "without"
 else:
     print("Attention mechanism is not specified.")
-    print("The model will be without attention.")
     use_attention = False
     attention = "without"
 
 if args.setup:
     setup = args.setup
 else:
-    print("No setup has been chosen, basic training will start.")
+    print("No training setup has been chosen, basic training will start.")
     setup = 0
 
 epochs = args.epochs
-print("Training of {} model {} attention mechanism will begin with {} epochs and setup {}.".format(model_type,attention,epochs,setup))
+print("Training of {} model {} attention mechanism will begin with {} epochs and training setup {}.".format(model_type,attention,epochs,setup))
 train(model_type,use_attention,setup,epochs)
     
 #Snippet might come useful later

@@ -132,14 +132,14 @@ def on_train_begin(model_object,model_type):
     create_info_test_file(experiment_number,model_type)
     return experiment_number
 
-def on_train_end(experiment_number):
+def on_train_end(experiment_number,model_type):
     print()
     print()
     print("-"*7 +" End of Experiment {} ".format(experiment_number) + "-"*7)
     print()
     print()
     print("-"*7 +" Plotting and saving the epochs training/validation accuracy/loss " + "-"*7)
-    plot_epochs_info(experiment_number)
+    plot_epochs_info(experiment_number,model_type)
 
 def save_training_time(experiment_number,time,model_type):
     filename = "Experiments/"+model_type+"/Experiment"+str(experiment_number)+"/summary_model"+str(experiment_number)+".txt"
@@ -153,16 +153,16 @@ def write_comment(experiment_number,comment,model_type):
 ##################### Add whether its an attention
 
 
-def on_epoch_end(epoch, accuracy, loss, val_accuracy, val_loss,experiment_number,model):
+def on_epoch_end(epoch, accuracy, loss, val_accuracy, val_loss,experiment_number,model,model_type):
     try:
-        append_to_epochs_file(experiment_number,epoch, accuracy, loss, val_accuracy, val_loss)
+        append_to_epochs_file(experiment_number,epoch, accuracy, loss, val_accuracy, val_loss,model_type)
 
     except Exception as e:
         print("Failed to append in epoch file or saving weights...")
         print("Exception error: ",str(e))
 
     
-def model_checkpoint(experiment_number,model,validation_accuracy,epoch,model_type):
+def model_checkpoint(experiment_number,model,model_type):
     exp_path = "Experiments/"+model_type+"/Experiment" + str(experiment_number)
     checkpoint_path = exp_path+"/checkpoints" 
     model.save_weights(checkpoint_path)
