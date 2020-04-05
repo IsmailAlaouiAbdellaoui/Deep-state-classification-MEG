@@ -1,5 +1,6 @@
 import time
 import gc
+import sys
 
 import experiment_utils as eutils
 import data_utils as utils
@@ -276,30 +277,34 @@ args = parser.parse_args()
 
 
 
-if not args.model : 
-    print("No model chosen, exiting ...")
-    import sys
-    sys.exit()
-    
-if(args.model.lower() == "cascade"):
+if args.model.lower() == "cascade":
     model_type = "Cascade"
-else:
+elif args.model.lower() == "multiview":
     model_type = "Multiview"
+else:
+    print("No model chosen, exiting ...")
+    sys.exit()
     
 if args.attention == True:
     use_attention = True
-else:
+    attention = "with"
+elif args.attention == False:
     use_attention = False
+    attention = "without"
+else:
+    print("Attention mechanism is not specified.")
+    print("The model will be without attention.")
+    use_attention = False
+    attention = "without"
 
-if (args.setup):
-    print("You chose setup {}".format(args.setup))
+if args.setup:
     setup = args.setup
 else:
-    print("No setup has been chosen, basic training will start ...")
-    print("Training Setup : 0")
+    print("No setup has been chosen, basic training will start.")
     setup = 0
 
 epochs = args.epochs
+print("Training of {} model {} attention mechanism will begin with {} epochs and setup {}.".format(args.model_type,args.a,,args.setup))
     
 train(model_type,use_attention,setup,epochs)
     

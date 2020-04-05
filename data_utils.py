@@ -259,6 +259,8 @@ def orderer_shuffling(rest_list,mem_list,math_list,motor_list):
 def multi_processing_cascade(directory, length, num_cpu):
     assert len(directory) == length*num_cpu,"Directory does not have {} files.".format(length*num_cpu)
     window_size = 10
+    input_rows = 20
+    input_columns = 21
     split = []
 
     for i in range(num_cpu):
@@ -279,19 +281,22 @@ def multi_processing_cascade(directory, length, num_cpu):
     
     x={}
 
-    x_temp = np.random.rand(1,20,21,1)
+    x_temp = np.random.rand(1,input_rows,input_columns,1)
     for i in range(window_size):
         for j in range(len(results)):
             x_temp = np.concatenate((x_temp,results[j][0]["input"+str(i+1)]))
         x_temp= np.delete(x_temp,0,0)
         x["input"+str(i+1)] = x_temp
-        x_temp = np.random.rand(1,20,21,1)
+        x_temp = np.random.rand(1,input_rows,input_columns,1)
         gc.collect()
     return x, y
 
 def multi_processing_multiview(directory, length, num_cpu):
     assert len(directory) == length*num_cpu,"Directory does not have {} files.".format(length*num_cpu)
     window_size = 10
+    input_rows = 20
+    input_columns = 21
+    input_channels = 248
     split = []
 
     for i in range(num_cpu):
@@ -311,8 +316,8 @@ def multi_processing_multiview(directory, length, num_cpu):
     
     x={}
 
-    x_temp = np.random.rand(1,20,21,1)
-    x_lstm = np.random.rand(1,248,1)
+    x_temp = np.random.rand(1,input_rows,input_columns,1)
+    x_lstm = np.random.rand(1,input_channels,1)
     for i in range(window_size):
         for j in range(len(results)):
             x_temp = np.concatenate((x_temp,results[j][0]["input"+str(i+1)]))
@@ -322,8 +327,8 @@ def multi_processing_multiview(directory, length, num_cpu):
         x_lstm= np.delete(x_lstm,0,0)
         x["input"+str(i+1)] = x_temp
         x["input"+str(i+window_size+1)] = x_lstm
-        x_temp = np.random.rand(1,20,21,1)
-        x_lstm = np.random.rand(1,248,1)
+        x_temp = np.random.rand(1,input_rows,input_columns,1)
+        x_lstm = np.random.rand(1,input_channels,1)
         gc.collect()
 
     return x, y
@@ -354,15 +359,18 @@ def get_dataset_name(file_name_with_dir):
 
 def preprocess_data_type(matrix, window_size):
     matrix = min_max_scale(matrix)
+    input_rows = 20
+    input_columns = 21
+    input_channels = 248
 
     if(matrix.shape[1] == 1):
         length = 1
     else:
         length = closestNumber(int(matrix.shape[1]) - window_size,window_size)
         
-    meshes = np.zeros((length,20,21),dtype=np.float64)
+    meshes = np.zeros((length,input_rows,input_columns),dtype=np.float64)
     for i in range(length):
-        array_time_step = np.reshape(matrix[:,i],(1,248))
+        array_time_step = np.reshape(matrix[:,i],(1,input_channels))
         meshes[i] = array_to_mesh(array_time_step)
 
     del matrix
@@ -376,15 +384,16 @@ def preprocess_data_type(matrix, window_size):
 
 def preprocess_data_type_lstm(matrix,window_size):
     matrix = min_max_scale(matrix)
+    input_channels = 248
 
     if(matrix.shape[1] == 1):
         length = 1
     else:
         length = closestNumber(int(matrix.shape[1]) - window_size,window_size)
         
-    matrices = np.zeros((length,248),dtype=np.float64)
+    matrices = np.zeros((length,input_channels),dtype=np.float64)
     for i in range(length):
-      matrix_step=np.reshape(matrix[:,i],(1,248))
+      matrix_step=np.reshape(matrix[:,i],(1,input_channels))
       matrices[i] = matrix_step
     
     del matrix
@@ -398,30 +407,35 @@ def preprocess_data_type_lstm(matrix,window_size):
 
 def reshape_input_dictionary(input_dict, output_list, batch_size):
 
+    input_rows = 20
+    input_columns = 21
+    input_channels = 248
     length_training = output_list.shape[0]
     length_adapted_batch_size= closestNumber(length_training-batch_size,batch_size)
 
     for i in range(len(input_dict.keys())):
         if i < 10:
-            input_dict["input"+str(i+1)] = np.reshape(input_dict["input"+str(i+1)][0:length_adapted_batch_size],(length_adapted_batch_size,20,21,1))
+            input_dict["input"+str(i+1)] = np.reshape(input_dict["input"+str(i+1)][0:length_adapted_batch_size],(length_adapted_batch_size,input_rows,input_columns,1))
         else:
-            input_dict["input"+str(i+1)] = np.reshape(input_dict["input"+str(i+1)][0:length_adapted_batch_size],(length_adapted_batch_size,248,1))
+            input_dict["input"+str(i+1)] = np.reshape(input_dict["input"+str(i+1)][0:length_adapted_batch_size],(length_adapted_batch_size,input_channels,1))
 
     output_list = output_list[0:length_adapted_batch_size]
     return input_dict, output_list
 
 def load_overlapped_data_cascade(file_dirs):
     
-    rest_matrix = np.random.rand(248,1)
-    math_matrix = np.random.rand(248,1)
-    memory_matrix = np.random.rand(248,1)
-    motor_matrix = np.random.rand(248,1)
-    
+    input_rows = 20
+    input_columns = 21
+    input_channels = 248   
     number_classes = 4
     window_size = 10
 
+    rest_matrix = np.random.rand(input_channels,1)
+    math_matrix = np.random.rand(input_channels,1)
+    memory_matrix = np.random.rand(input_channels,1)
+    motor_matrix = np.random.rand(input_channels,1)
+ 
     files_to_load = file_dirs
-
     
     for i in range(len(files_to_load)):
         if "rest" in files_to_load[i]:
@@ -429,7 +443,7 @@ def load_overlapped_data_cascade(file_dirs):
                 dataset_name = get_dataset_name(files_to_load[i])
                 matrix = f.get(dataset_name)
                 matrix = np.array(matrix)
-            assert matrix.shape[0] == 248 , "This rest data does not have 248 channels, but {} instead".format(matrix.shape[0])
+            assert matrix.shape[0] == input_channels , "This rest data does not have {} channels, but {} instead".format(input_channels,matrix.shape[0])
             rest_matrix = np.column_stack((rest_matrix, matrix))
 
         if "math" in files_to_load[i]:
@@ -437,7 +451,7 @@ def load_overlapped_data_cascade(file_dirs):
                 dataset_name = get_dataset_name(files_to_load[i])
                 matrix = f.get(dataset_name)
                 matrix = np.array(matrix)
-            assert matrix.shape[0] == 248 , "This math data does not have 248 channels, but {} instead".format(matrix.shape[0])
+            assert matrix.shape[0] == input_channels , "This math data does not have {} channels, but {} instead".format(input_channels,matrix.shape[0])
             math_matrix = np.column_stack((math_matrix, matrix))
             
         if "memory" in files_to_load[i]:
@@ -445,7 +459,7 @@ def load_overlapped_data_cascade(file_dirs):
                 dataset_name = get_dataset_name(files_to_load[i])
                 matrix = f.get(dataset_name)
                 matrix = np.array(matrix)
-            assert matrix.shape[0] == 248 , "This memory data does not have 248 channels, but {} instead".format(matrix.shape[0])
+            assert matrix.shape[0] == input_channels , "This memory data does not have {} channels, but {} instead".format(input_channels,matrix.shape[0])
             memory_matrix = np.column_stack((memory_matrix, matrix))
             
         if "motor" in files_to_load[i]:
@@ -453,7 +467,7 @@ def load_overlapped_data_cascade(file_dirs):
                 dataset_name = get_dataset_name(files_to_load[i])
                 matrix = f.get(dataset_name)
                 matrix = np.array(matrix)
-            assert matrix.shape[0] == 248 , "This motor data does not have 248 channels, but {} instead".format(matrix.shape[0])
+            assert matrix.shape[0] == input_channels , "This motor data does not have {} channels, but {} instead".format(input_channels,matrix.shape[0])
             motor_matrix = np.column_stack((motor_matrix, matrix))
         matrix = None
 
@@ -486,7 +500,7 @@ def load_overlapped_data_cascade(file_dirs):
  
     inputs = []
     for i in range(window_size):
-        inputs.append(np.random.rand(1,20,21))
+        inputs.append(np.random.rand(1,input_rows,input_columns))
 
     for i in range(number_classes):
         for j in range(window_size):
@@ -498,7 +512,7 @@ def load_overlapped_data_cascade(file_dirs):
     
     for i in range(window_size):
         inputs[i] = np.delete(inputs[i],0,0)
-        inputs[i] = np.reshape(inputs[i],(inputs[i].shape[0],20,21,1))
+        inputs[i] = np.reshape(inputs[i],(inputs[i].shape[0],input_rows,input_columns,1))
     
     dict_y = {0:y_rest,1:y_math,2:y_mem,3:y_motor}
     
@@ -535,12 +549,17 @@ def load_overlapped_data_cascade(file_dirs):
     return data_dict,y
 
 def load_overlapped_data_multiview(file_dirs):
-    rest_matrix = np.random.rand(248,1)
-    math_matrix = np.random.rand(248,1)
-    memory_matrix = np.random.rand(248,1)
-    motor_matrix = np.random.rand(248,1)
+
+    input_rows = 20
+    input_columns = 21
+    input_channels = 248
     number_classes = 4
     window_size = 10
+
+    rest_matrix = np.random.rand(input_channels,1)
+    math_matrix = np.random.rand(input_channels,1)
+    memory_matrix = np.random.rand(input_channels,1)
+    motor_matrix = np.random.rand(input_channels,1)
 
     files_to_load = file_dirs
 
@@ -550,7 +569,7 @@ def load_overlapped_data_multiview(file_dirs):
                 dataset_name = get_dataset_name(files_to_load[i])
                 matrix = f.get(dataset_name)
                 matrix = np.array(matrix)
-            assert matrix.shape[0] == 248 , "This rest data does not have 248 channels, but {} instead".format(matrix.shape[0])
+            assert matrix.shape[0] == input_channels , "This rest data does not have {} channels, but {} instead".format(input_channels,matrix.shape[0])
             rest_matrix = np.column_stack((rest_matrix, matrix))
 
         if "math" in files_to_load[i]:
@@ -558,7 +577,7 @@ def load_overlapped_data_multiview(file_dirs):
                 dataset_name = get_dataset_name(files_to_load[i])
                 matrix = f.get(dataset_name)
                 matrix = np.array(matrix)
-            assert matrix.shape[0] == 248 , "This math data does not have 248 channels, but {} instead".format(matrix.shape[0])
+            assert matrix.shape[0] == input_channels , "This math data does not have {} channels, but {} instead".format(input_channels,matrix.shape[0])
             math_matrix = np.column_stack((math_matrix, matrix))
             
         if "memory" in files_to_load[i]:
@@ -566,7 +585,7 @@ def load_overlapped_data_multiview(file_dirs):
                 dataset_name = get_dataset_name(files_to_load[i])
                 matrix = f.get(dataset_name)
                 matrix = np.array(matrix)
-            assert matrix.shape[0] == 248 , "This memory data does not have 248 channels, but {} instead".format(matrix.shape[0])
+            assert matrix.shape[0] == input_channels , "This memory data does not have {} channels, but {} instead".format(input_channels,matrix.shape[0])
             memory_matrix = np.column_stack((memory_matrix, matrix))
             
         if "motor" in files_to_load[i]:
@@ -574,7 +593,7 @@ def load_overlapped_data_multiview(file_dirs):
                 dataset_name = get_dataset_name(files_to_load[i])
                 matrix = f.get(dataset_name)
                 matrix = np.array(matrix)
-            assert matrix.shape[0] == 248 , "This motor data does not have 248 channels, but {} instead".format(matrix.shape[0])
+            assert matrix.shape[0] == input_channels , "This motor data does not have {} channels, but {} instead".format(input_channels,matrix.shape[0])
             motor_matrix = np.column_stack((motor_matrix, matrix))
 
         matrix = None
@@ -616,10 +635,10 @@ def load_overlapped_data_multiview(file_dirs):
 
     inputs = []
     for i in range(window_size):
-        inputs.append(np.random.rand(1,20,21))
+        inputs.append(np.random.rand(1,input_rows,input_columns))
 
     for i in range(window_size):
-        inputs.append(np.random.rand(1,248))
+        inputs.append(np.random.rand(1,input_channels))
 
     for i in range(number_classes):
         for j in range(window_size):
@@ -633,9 +652,9 @@ def load_overlapped_data_multiview(file_dirs):
         
     for i in range(window_size):
         inputs[i] = np.delete(inputs[i],0,0)
-        inputs[i] = np.reshape(inputs[i],(inputs[i].shape[0],20,21,1))
+        inputs[i] = np.reshape(inputs[i],(inputs[i].shape[0],input_rows,input_columns,1))
         inputs[i+window_size] = np.delete(inputs[i+window_size],0,0)
-        inputs[i+window_size] = np.reshape(inputs[i+window_size],(inputs[i+window_size].shape[0],248,1))
+        inputs[i+window_size] = np.reshape(inputs[i+window_size],(inputs[i+window_size].shape[0],input_channels,1))
         
     dict_y = {0:y_rest,1:y_math,2:y_mem,3:y_motor}
     
@@ -681,8 +700,13 @@ def load_overlapped_data_multiview(file_dirs):
     
     
 def array_to_mesh(arr):    
-    assert arr.shape == (1,248),"the shape of the input array should be (1,248) because there are 248 MEG channels,received array of shape " + str(arr.shape)
-    output = np.zeros((20,21),dtype = np.float)
+
+    input_rows = 20
+    input_columns = 21
+    input_channels = 248
+
+    assert arr.shape == (1,input_channels),"the shape of the input array should be (1,248) because there are 248 MEG channels,received array of shape " + str(arr.shape)
+    output = np.zeros((input_rows,input_columns),dtype = np.float)
     
     #121
     output[0][10] = arr[0][120]
