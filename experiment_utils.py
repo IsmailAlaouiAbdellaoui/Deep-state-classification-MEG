@@ -157,7 +157,6 @@ def write_comment(experiment_number,comment,model_type,setup,use_attention):
 def on_epoch_end(epoch, accuracy, loss, val_accuracy, val_loss,experiment_number,model,model_type):
     try:
         append_to_epochs_file(experiment_number,epoch, accuracy, loss, val_accuracy, val_loss,model_type)
-
     except Exception as e:
         print("Failed to append in epoch file or saving weights...")
         print("Exception error: ",str(e))
@@ -165,8 +164,48 @@ def on_epoch_end(epoch, accuracy, loss, val_accuracy, val_loss,experiment_number
     
 def model_checkpoint(experiment_number,model,model_type):
     exp_path = "Experiments/"+model_type+"/Experiment" + str(experiment_number)
-    checkpoint_path = exp_path+"/checkpoints" 
-    model.save_weights(checkpoint_path)
+    try:
+        check_point_path = exp_path+'/checkpoints/checkpoint.hdf5'
+        model.save_weights(check_point_path)
+    except Exception as e:
+        print("Could not save the model weights in h5 format")
+        print("Exception error: ",str(e))
+        try:
+            checkpoint_path = exp_path+"/checkpoints/checkpoint" 
+            model.save_weights(checkpoint_path)
+        except Exception as e2:
+            print("Could not save the model weights in checkpoint format")
+            print("Exception error: ",str(e2))
+            
+def model_save(experiment_number,model,model_type):
+    exp_path = "Experiments/"+model_type+"/Experiment" + str(experiment_number)
+    try:
+        model_path = exp_path+"/model{}.h5".format(experiment_number)
+        model.save(model_path,save_format="h5")
+    except Exception as e:
+        print("Could not save the model in h5 format")
+        print("Exception error: ",str(e))
+    try:
+        model_path = exp_path+"/model{}_tf".format(experiment_number) 
+        model.save(model_path,save_format="tf")
+    except Exception as e2:
+        print("Could not save the model in tf format")
+        print("Exception error: ",str(e2))
+        
+        
+        
+        
+        
+        
+     
+    
+            
+
+            
+            
+    
+    
+    
     
 
 def append_to_summary_file(model_object, experiment_number,model_type):

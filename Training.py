@@ -175,7 +175,9 @@ def train(model_type,use_attention,setup,num_epochs):
             subj_train_timespan = time.time() - start_subject_time
             print("Saving the model weights...")
             eutils.model_checkpoint(experiment_number,model,model_type) # saving model weights after each subject
-            print("Model's weights saved, Epoch : {}, subject : {}".format(epoch+1,subject) )
+            print("Saving the model ...")
+            eutils.model_save(experiment_number,model,model_type)
+            print("Model and model's weights saved, Epoch : {}, subject : {}".format(epoch+1,subject) )
             print("Timespan subject training is : {}".format(subj_train_timespan))
             history_dict = history.history
             accuracies_temp_train.append(history_dict['accuracy'][0])#its because its a list of 1 element
