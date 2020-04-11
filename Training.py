@@ -15,9 +15,9 @@ from Multiview import Multiview
 
 window_size = 10
     
-conv1_filters = 4
-conv2_filters = 8
-conv3_filters = 16
+conv1_filters = 1
+conv2_filters = 2
+conv3_filters = 4
 
 conv1_kernel_shape = (7,7)
 conv2_kernel_shape = conv1_kernel_shape
@@ -31,7 +31,7 @@ conv1_activation = "relu"
 conv2_activation = conv1_activation
 conv3_activation = conv1_activation
 
-dense_nodes = 500
+dense_nodes = 125
 dense_activation = "relu"
 dense_dropout = 0.5
 
@@ -236,7 +236,7 @@ def train(model_type,use_attention,setup,num_epochs):
                 elif model_type == 'Multiview':
                     X_test, Y_test = utils.multi_processing_multiview(subject_files_test,number_files_per_worker,number_workers_testing)
             
-                result = model.evaluate(X_test, Y_test, batch_size = batch_size,verbose=2)
+                result = model.evaluate(X_test, Y_test, batch_size = batch_size,verbose=1)
                 
                 accuracies_temp.append(result[1])
                 print("Recording the testing accuracy of '{}' in a file".format(subject))

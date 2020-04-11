@@ -161,7 +161,11 @@ class CascadeAttention:
     
     
     def tfaugmented_conv2d(self,X, Fout, k, dk, dv, Nh, relative):
-      conv_out = Conv2D(filters=Fout - dv,kernel_size=k, padding='same')(X)
+      if Fout-dv < 0:
+          filters = 1
+      else:
+          filters = Fout - dv
+      conv_out = Conv2D(filters=filters,kernel_size=k, padding='same')(X)
       attn_out = self.self_attention_2d(X, dk, dv, Nh, relative=relative)
       return tf.concat([conv_out, attn_out], axis=3)
   
