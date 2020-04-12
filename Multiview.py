@@ -40,9 +40,9 @@ class Multiview:
         self.dense3_nodes = dense3_nodes
         self.dense3_activation = dense3_activation
         
-        self.model = self.get_multiview_model()
+        self.model = self.get_model()
     
-    def get_multiview_model(self):
+    def get_model(self):
 
         inputs_cnn = []
         inputs_lstm = []

@@ -45,9 +45,9 @@ class Cascade:
         self.final_dropout = final_dropout
 
         
-        self.model = self.cascade_model()
+        self.model = self.get_model()
 
-    def cascade_model(self):
+    def get_model(self):
       inputs = []
       convs = []
       for i in range(self.window_size):

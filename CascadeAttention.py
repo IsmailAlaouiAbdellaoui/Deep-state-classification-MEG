@@ -54,7 +54,7 @@ class CascadeAttention:
         self.num_heads = 2  
         self.relative = False
         
-        self.model = self.cascade_model()
+        self.model = self.get_model()
 
     def shape_list(self,x):
       """Return list of dims, statically where possible."""
@@ -169,7 +169,7 @@ class CascadeAttention:
       attn_out = self.self_attention_2d(X, dk, dv, Nh, relative=relative)
       return tf.concat([conv_out, attn_out], axis=3)
   
-    def cascade_model(self):
+    def get_model(self):
       inputs = []
       convs = []
       for i in range(self.window_size):
