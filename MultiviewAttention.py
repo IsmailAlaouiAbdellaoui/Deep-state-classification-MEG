@@ -7,7 +7,7 @@ class MultiviewAttention:
     def __init__(self, window_size,conv1_filters,conv2_filters,conv3_filters,
                  conv1_kernel_shape,conv2_kernel_shape,conv3_kernel_shape,
                  padding1,padding2,padding3,conv1_activation,conv2_activation,
-                 conv3_activation,dense_nodes,dense_activation,
+                 conv3_activation,dense_nodes,dense_activation,depth,
                  lstm1_cells,lstm2_cells,dense3_nodes,dense3_activation):
         
         self.number_classes = 4
@@ -46,6 +46,8 @@ class MultiviewAttention:
         self.depth_v = 4
         self.num_heads = 2  
         self.relative = False
+        
+        self.depth = depth
 
         self.model = self.get_model()
 
@@ -167,7 +169,7 @@ class MultiviewAttention:
         lstm = []
         
         for i in range(self.window_size):
-            input_cnn = Input(shape=(self.mesh_rows,self.mesh_columns, 1), name = "input"+str(i+1))  
+            input_cnn = Input(shape=(self.mesh_rows,self.mesh_columns, self.depth), name = "input"+str(i+1))  
             input_lstm = Input(shape=(self.number_channels,1), name = "input"+str(i+1+self.window_size))
             inputs_cnn.append(input_cnn)
             inputs_lstm.append(input_lstm)

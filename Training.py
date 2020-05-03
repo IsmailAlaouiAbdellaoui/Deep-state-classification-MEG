@@ -42,13 +42,15 @@ dense3_nodes = dense_nodes
 dense3_activation = "relu"
 final_dropout = 0.5
 
+depth = 10
+
 
 def get_cascade_model():
     cascade_object = Cascade(window_size,conv1_filters,conv2_filters,conv3_filters,
                 conv1_kernel_shape,conv2_kernel_shape,conv3_kernel_shape,
                 padding1,padding2,padding3,conv1_activation,conv2_activation,
                 conv3_activation,dense_nodes,dense_activation,dense_dropout,
-                lstm1_cells,lstm2_cells,dense3_nodes,dense3_activation,
+                lstm1_cells,lstm2_cells,dense3_nodes,dense3_activation,depth,
                 final_dropout)
     cascade_model = cascade_object.model
     return cascade_model, cascade_object
@@ -67,7 +69,7 @@ def get_multiview_model():
     multiview_object = Multiview(window_size,conv1_filters,conv2_filters,conv3_filters,
              conv1_kernel_shape,conv2_kernel_shape,conv3_kernel_shape,
              padding1,padding2,padding3,conv1_activation,conv2_activation,
-             conv3_activation,dense_nodes,dense_activation,
+             conv3_activation,dense_nodes,dense_activation,depth,
              lstm1_cells,lstm2_cells,dense3_nodes,dense3_activation)
     multiview_model = multiview_object.model
     return multiview_model, multiview_object
@@ -76,7 +78,7 @@ def get_multiview_model_attention():
     multiview_attention_object = MultiviewAttention(window_size,conv1_filters,conv2_filters,conv3_filters,
              conv1_kernel_shape,conv2_kernel_shape,conv3_kernel_shape,
              padding1,padding2,padding3,conv1_activation,conv2_activation,
-             conv3_activation,dense_nodes,dense_activation,
+             conv3_activation,dense_nodes,dense_activation,depth,
              lstm1_cells,lstm2_cells,dense3_nodes,dense3_activation)
     multiview_attention_model = multiview_attention_object.model
     return multiview_attention_model, multiview_attention_object
@@ -153,21 +155,21 @@ def train(model_type,use_attention,setup,num_epochs):
             number_files_per_worker = len(subject_files_train)//number_workers_training
 
             if model_type == 'Cascade':
-                X_train, Y_train = utils.multi_processing_cascade(subject_files_train,number_files_per_worker,number_workers_training)            
+                X_train, Y_train = utils.multi_processing_cascade(subject_files_train,number_files_per_worker,number_workers_training,depth)            
             elif model_type == 'Multiview':
-                X_train, Y_train = utils.multi_processing_multiview(subject_files_train,number_files_per_worker,number_workers_training)            
+                X_train, Y_train = utils.multi_processing_multiview(subject_files_train,number_files_per_worker,number_workers_training,depth)            
 
-            X_train,Y_train = utils.reshape_input_dictionary(X_train, Y_train, batch_size)
+            X_train,Y_train = utils.reshape_input_dictionary(X_train, Y_train, batch_size,depth)
 
             number_workers_validation = 8
             number_files_per_worker = len(subject_files_val)//number_workers_validation
             
             if model_type == 'Cascade':
-                X_validate, Y_validate = utils.multi_processing_cascade(subject_files_val,number_files_per_worker,number_workers_validation)            
+                X_validate, Y_validate = utils.multi_processing_cascade(subject_files_val,number_files_per_worker,number_workers_validation,depth)            
             elif model_type == 'Multiview':
-                X_validate, Y_validate = utils.multi_processing_multiview(subject_files_val,number_files_per_worker,number_workers_validation)            
+                X_validate, Y_validate = utils.multi_processing_multiview(subject_files_val,number_files_per_worker,number_workers_validation,depth)            
             
-            X_validate, Y_validate = utils.reshape_input_dictionary(X_validate, Y_validate, batch_size)
+            X_validate, Y_validate = utils.reshape_input_dictionary(X_validate, Y_validate, batch_size,depth)
             
             history = model.fit(X_train, Y_train, batch_size = batch_size, epochs = 1, 
                                     verbose = 1, validation_data=(X_validate, Y_validate), 
@@ -232,9 +234,9 @@ def train(model_type,use_attention,setup,num_epochs):
                 number_files_per_worker = len(subject_files_test)//number_workers_testing
 
                 if model_type == 'Cascade':
-                    X_test, Y_test = utils.multi_processing_cascade(subject_files_test,number_files_per_worker,number_workers_testing)
+                    X_test, Y_test = utils.multi_processing_cascade(subject_files_test,number_files_per_worker,number_workers_testing,depth)
                 elif model_type == 'Multiview':
-                    X_test, Y_test = utils.multi_processing_multiview(subject_files_test,number_files_per_worker,number_workers_testing)
+                    X_test, Y_test = utils.multi_processing_multiview(subject_files_test,number_files_per_worker,number_workers_testing,depth)
             
                 result = model.evaluate(X_test, Y_test, batch_size = batch_size,verbose=1)
                 

@@ -8,7 +8,7 @@ class Cascade:
                  conv1_kernel_shape,conv2_kernel_shape,conv3_kernel_shape,
                  padding1,padding2,padding3,conv1_activation,conv2_activation,
                  conv3_activation,dense_nodes,dense_activation,dense_dropout,
-                 lstm1_cells,lstm2_cells,dense3_nodes,dense3_activation,
+                 lstm1_cells,lstm2_cells,dense3_nodes,dense3_activation,depth,
                  final_dropout):
         
         self.number_classes = 4
@@ -43,7 +43,8 @@ class Cascade:
         self.dense3_nodes = dense3_nodes
         self.dense3_activation = dense3_activation
         self.final_dropout = final_dropout
-
+        
+        self.depth = depth
         
         self.model = self.get_model()
 
@@ -51,7 +52,7 @@ class Cascade:
       inputs = []
       convs = []
       for i in range(self.window_size):
-          input_layer = Input(shape=(self.mesh_rows, self.mesh_columns, 1), name = "input"+str(i+1))
+          input_layer = Input(shape=(self.mesh_rows, self.mesh_columns, self.depth), name = "input"+str(i+1))
           inputs.append(input_layer)
 
       for i in range(self.window_size):
