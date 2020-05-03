@@ -54,7 +54,7 @@ class Multiview:
         
         for i in range(self.window_size):
             input_cnn = Input(shape=(self.mesh_rows,self.mesh_columns, self.depth), name = "input"+str(i+1))  
-            input_lstm = Input(shape=(self.number_channels,1), name = "input"+str(i+1+self.window_size))
+            input_lstm = Input(shape=(self.number_channels,self.depth), name = "input"+str(i+1+self.window_size))
             inputs_cnn.append(input_cnn)
             inputs_lstm.append(input_lstm)
             
