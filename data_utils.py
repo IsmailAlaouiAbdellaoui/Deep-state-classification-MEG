@@ -612,6 +612,8 @@ def load_overlapped_data_multiview(file_dirs):
     x_mem,y_mem = preprocess_data_type(memory_matrix,window_size)
     x_mem_lstm,y_mem_lstm = preprocess_data_type_lstm(memory_matrix,window_size)
     memory_matrix = None
+    y_mem = y_mem*2
+    y_mem_lstm = y_mem_lstm*2
     
     x_motor,y_motor = preprocess_data_type(motor_matrix,window_size)
     x_motor_lstm,y_motor_lstm = preprocess_data_type_lstm(motor_matrix,window_size)
