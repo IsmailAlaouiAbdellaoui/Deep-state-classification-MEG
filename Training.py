@@ -100,9 +100,6 @@ def train(model_type,use_attention,setup,num_epochs):
         subjects = ['105923','164636','133019']
         list_subjects_test = ['204521','212318','162935','601127','725751','735148']
     if setup == 2:
-        subjects = ['105923','164636','133019','113922','116726','140117']
-        list_subjects_test = ['204521','212318','162935','601127','725751','735148']
-    if setup == 3:
         subjects = ['105923','164636','133019','113922','116726','140117','175237','177746','185442','191033','191437','192641']
         list_subjects_test = ['204521','212318','162935','601127','725751','735148']
         
@@ -173,17 +170,17 @@ def train(model_type,use_attention,setup,num_epochs):
             X_validate, Y_validate = utils.reshape_input_dictionary(X_validate, Y_validate, batch_size,depth)
             
             history = model.fit(X_train, Y_train, batch_size = batch_size, epochs = 1, 
-                                    verbose = 1, validation_data=(X_validate, Y_validate), 
+                                    verbose = 2, validation_data=(X_validate, Y_validate), 
                                     callbacks=None)
             subj_train_timespan = time.time() - start_subject_time
             print("Saving the model weights...")
-            eutils.model_checkpoint(experiment_number,model,model_type) # saving model weights after each subject
+            eutils.model_checkpoint(experiment_number,model,model_type,epoch+1) # saving model weights after each subject
             print("Saving the model ...")
-            eutils.model_save(experiment_number,model,model_type)
+            eutils.model_save(experiment_number,model,model_type,epoch+1)
             print("Model and model's weights saved, Epoch : {}, subject : {}".format(epoch+1,subject) )
             print("Timespan subject training is : {}".format(subj_train_timespan))
             history_dict = history.history
-            accuracies_temp_train.append(history_dict['accuracy'][0])#its because its a list of 1 element
+            accuracies_temp_train.append(history_dict['accuracy'][0])#list of 1 element
             losses_temp_train.append(history_dict['loss'][0])
             accuracies_temp_val.append(history_dict['val_accuracy'][0])
             losses_temp_val.append(history_dict['val_loss'][0])
@@ -222,7 +219,6 @@ def train(model_type,use_attention,setup,num_epochs):
         if (epoch+1) % 2 == 0 or (epoch+1) == num_epochs:
             print("\n")
             accuracies_temp = []
-            #Creating dataset for testing
             for subject in list_subjects_test:
                 start_testing = time.time()
                 print("\nTesting on subject", subject)
@@ -239,7 +235,7 @@ def train(model_type,use_attention,setup,num_epochs):
                 elif model_type == 'Multiview':
                     X_test, Y_test = utils.multi_processing_multiview(subject_files_test,number_files_per_worker,number_workers_testing,depth)
             
-                result = model.evaluate(X_test, Y_test, batch_size = batch_size,verbose=1)
+                result = model.evaluate(X_test, Y_test, batch_size = batch_size,verbose=2)
                 
                 accuracies_temp.append(result[1])
                 print("Recording the testing accuracy of '{}' in a file".format(subject))
@@ -258,7 +254,7 @@ def train(model_type,use_attention,setup,num_epochs):
     time_span = stop_time - start_time
     print()
     print()
-    print("training took {:.2f} seconds".format(time_span))
+    print("Training took {:.2f} seconds".format(time_span))
     eutils.on_train_end(experiment_number,model_type)
     eutils.save_training_time(experiment_number, time_span,model_type)
     eutils.write_comment(experiment_number,comment,model_type,setup,use_attention)

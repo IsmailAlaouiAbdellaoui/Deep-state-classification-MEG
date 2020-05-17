@@ -162,31 +162,31 @@ def on_epoch_end(epoch, accuracy, loss, val_accuracy, val_loss,experiment_number
         print("Exception error: ",str(e))
 
     
-def model_checkpoint(experiment_number,model,model_type):
+def model_checkpoint(experiment_number,model,model_type,epoch):
     exp_path = "Experiments/"+model_type+"/Experiment" + str(experiment_number)
     try:
-        check_point_path = exp_path+'/checkpoints/checkpoint.hdf5'
+        check_point_path = exp_path+'/checkpoints/{}_checkpoint.hdf5'.format(epoch)
         model.save_weights(check_point_path)
     except Exception as e:
         print("Could not save the model weights in h5 format")
         print("Exception error: ",str(e))
-        try:
-            checkpoint_path = exp_path+"/checkpoints/checkpoint" 
-            model.save_weights(checkpoint_path)
-        except Exception as e2:
-            print("Could not save the model weights in checkpoint format")
-            print("Exception error: ",str(e2))
+    try:
+        checkpoint_path = exp_path+"/checkpoints/{}_checkpoint".format(epoch) 
+        model.save_weights(checkpoint_path)
+    except Exception as e2:
+        print("Could not save the model weights in checkpoint format")
+        print("Exception error: ",str(e2))
             
-def model_save(experiment_number,model,model_type):
+def model_save(experiment_number,model,model_type,epoch):
     exp_path = "Experiments/"+model_type+"/Experiment" + str(experiment_number)
     try:
-        model_path = exp_path+"/model{}.h5".format(experiment_number)
+        model_path = exp_path+"/{}_model{}.h5".format(epoch,experiment_number)
         model.save(model_path,save_format="h5")
     except Exception as e:
         print("Could not save the model in h5 format")
         print("Exception error: ",str(e))
     try:
-        model_path = exp_path+"/model{}_tf".format(experiment_number) 
+        model_path = exp_path+"/{}_model{}_tf".format(epoch,experiment_number) 
         model.save(model_path,save_format="tf")
     except Exception as e2:
         print("Could not save the model in tf format")

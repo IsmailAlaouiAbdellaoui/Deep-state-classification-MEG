@@ -10,6 +10,7 @@ import gc
 from sklearn.utils import shuffle
 from tensorflow.keras.utils import to_categorical
 from multiprocessing import Pool
+from scipy import stats
 
 
 
@@ -26,6 +27,9 @@ def closestNumber(n, m) :
     if (abs(n - n1) < abs(n - n2)) : 
         return n1 
     return n2 
+
+def normalize(array):
+    return stats.zscore(array)
 
      
 #Reads the binary file given the subject and the type of state
@@ -96,7 +100,7 @@ def create_h5_files(raw_matrix,subject,type_state):
 
     number_columns_per_chunk = number_columns // 10
 
-    if subject == "212318" or subject == "162935" or subject == "204521" or subject == "707749" or subject == "725751" or subject == "735148":  
+    if subject == "212318" or subject == "162935" or subject == "204521" or subject == "601127" or subject == "725751" or subject == "735148":  
         #data goes to test folder
         for i in range(10):
             start_index_col = number_columns_per_chunk * (i+4) # i+4 corresponds to an offset of 30s approximately
@@ -358,8 +362,7 @@ def get_dataset_name(file_name_with_dir):
     dataset_name = "_".join(temp)
     return dataset_name
 
-def preprocess_data_type(matrix, window_size):
-    matrix = min_max_scale(matrix)
+def preprocess_data_type(matrix, window_size,depth):
     input_rows = 20
     input_columns = 21
     input_channels = 248
@@ -367,46 +370,84 @@ def preprocess_data_type(matrix, window_size):
     if(matrix.shape[1] == 1):
         length = 1
     else:
-        length = closestNumber(int(matrix.shape[1]) - window_size,window_size)
+        length = closestNumber(int(matrix.shape[1]) - window_size*depth,window_size*depth)
         
-    meshes = np.zeros((length,input_rows,input_columns),dtype=np.float64)
+    meshes = np.zeros((input_rows,input_columns,length),dtype=np.float64)
     for i in range(length):
         array_time_step = np.reshape(matrix[:,i],(1,input_channels))
-        meshes[i] = array_to_mesh(array_time_step)
+        meshes[:,:,i] = array_to_mesh(array_time_step)
 
     del matrix
-    inputs = get_input_lists(meshes, get_lists_indexes(length,window_size),window_size)
+    if depth == 1:
+        inputs = get_input_lists(meshes, get_lists_indexes(length,window_size),window_size,length)
+    else:
+        inputs = []
+        if length == 1:
+            for i in range(window_size):
+                inputs.append(np.zeros((0,input_rows,input_columns,depth)))
+        else:
+            var = int(window_size*depth/2)    # difference between values in columns
+            var2 = int((length-window_size*depth/2)/var) # number of rows
+
+            for j in range(var2):
+                if j == 0:
+                    for i in range(window_size):
+                        inputs.append(np.zeros((var2,input_rows,input_columns,depth)))
+                        inputs[i][j] = meshes[:,:,i*depth:(i+1)*depth]
+                else:
+                    for i in range(window_size):
+                        inputs[i][j] = meshes[:,:,var*j+i*depth:var*j+(i+1)*depth]
+
     del meshes
     gc.collect()
     
-    number_y_labels = int((length/(window_size)*2)-1)
+    number_y_labels = int((length/(window_size*depth)*2)-1)
     y = np.ones((number_y_labels,1),dtype=np.int8)
     return inputs, y
 
-def preprocess_data_type_lstm(matrix,window_size):
-    matrix = min_max_scale(matrix)
+def preprocess_data_type_lstm(matrix,window_size,depth):
     input_channels = 248
 
     if(matrix.shape[1] == 1):
         length = 1
     else:
-        length = closestNumber(int(matrix.shape[1]) - window_size,window_size)
+        length = closestNumber(int(matrix.shape[1]) - window_size*depth,window_size*depth)
         
-    matrices = np.zeros((length,input_channels),dtype=np.float64)
+    matrices = np.zeros((input_channels,length),dtype=np.float64)
     for i in range(length):
-      matrix_step=np.reshape(matrix[:,i],(1,input_channels))
-      matrices[i] = matrix_step
+        matrix_step=np.reshape(matrix[:,i],(1,input_channels))
+        matrices[:,i] = matrix_step
     
     del matrix
-    inputs = get_input_lists(matrices, get_lists_indexes(length,window_size),window_size)
+
+    if depth == 1:
+        inputs = get_input_lists(matrices, get_lists_indexes(length,window_size),window_size,length)
+    else:
+        inputs = []
+        if length == 1:
+            for i in range(window_size):
+                inputs.append(np.zeros((0,input_channels,depth)))
+        else:      
+            var = int(window_size*depth/2)    # difference between values in columns
+            var2 = int((length-window_size*depth/2)/var) # number of rows
+
+            for j in range(var2):
+                if j == 0:
+                    for i in range(window_size):
+                        inputs.append(np.zeros((var2,input_channels,depth)))
+                        inputs[i][j] = matrices[:,i*depth:(i+1)*depth]
+                else:
+                    for i in range(window_size):
+                        inputs[i][j] = matrices[:,var*j+i*depth:var*j+(i+1)*depth]
+
     del matrices
     gc.collect()
 
-    number_y_labels = int((length/(window_size)*2)-1)
+    number_y_labels = int((length/(window_size*depth)*2)-1)
     y = np.ones((number_y_labels,1),dtype=np.int8)
     return inputs, y
 
-def reshape_input_dictionary(input_dict, output_list, batch_size):
+def reshape_input_dictionary(input_dict, output_list, batch_size, depth):
 
     input_rows = 20
     input_columns = 21
@@ -416,9 +457,9 @@ def reshape_input_dictionary(input_dict, output_list, batch_size):
 
     for i in range(len(input_dict.keys())):
         if i < 10:
-            input_dict["input"+str(i+1)] = np.reshape(input_dict["input"+str(i+1)][0:length_adapted_batch_size],(length_adapted_batch_size,input_rows,input_columns,1))
+            input_dict["input"+str(i+1)] = np.reshape(input_dict["input"+str(i+1)][0:length_adapted_batch_size],(length_adapted_batch_size,input_rows,input_columns,depth))
         else:
-            input_dict["input"+str(i+1)] = np.reshape(input_dict["input"+str(i+1)][0:length_adapted_batch_size],(length_adapted_batch_size,input_channels,1))
+            input_dict["input"+str(i+1)] = np.reshape(input_dict["input"+str(i+1)][0:length_adapted_batch_size],(length_adapted_batch_size,input_channels,depth))
 
     output_list = output_list[0:length_adapted_batch_size]
     return input_dict, output_list
@@ -430,6 +471,7 @@ def load_overlapped_data_cascade(file_dirs):
     input_channels = 248   
     number_classes = 4
     window_size = 10
+    depth = 10
 
     rest_matrix = np.random.rand(input_channels,1)
     math_matrix = np.random.rand(input_channels,1)
@@ -501,7 +543,7 @@ def load_overlapped_data_cascade(file_dirs):
  
     inputs = []
     for i in range(window_size):
-        inputs.append(np.random.rand(1,input_rows,input_columns))
+        inputs.append(np.random.rand(1,input_rows,input_columns,depth))
 
     for i in range(number_classes):
         for j in range(window_size):
@@ -513,7 +555,6 @@ def load_overlapped_data_cascade(file_dirs):
     
     for i in range(window_size):
         inputs[i] = np.delete(inputs[i],0,0)
-        inputs[i] = np.reshape(inputs[i],(inputs[i].shape[0],input_rows,input_columns,1))
     
     dict_y = {0:y_rest,1:y_math,2:y_mem,3:y_motor}
     
@@ -530,10 +571,11 @@ def load_overlapped_data_cascade(file_dirs):
     x_length = inputs[0].shape[0]
     for i in range(x_length):
         for j in range(window_size):
-            temp = inputs[j][i]
-            inside = temp[:,:,0]
-            norm = min_max_scale(inside)
-            inputs[j][i][:,:,0] = norm
+            temp = inputs[j][i] # length,rows,columns,depth
+            for k in range(depth):
+                inside = temp[:,:,k]
+                norm = normalize(inside)
+                inputs[j][i][:,:,k] = norm
 
     temp = None
     inside = None
@@ -556,7 +598,8 @@ def load_overlapped_data_multiview(file_dirs):
     input_channels = 248
     number_classes = 4
     window_size = 10
-
+    depth = 10
+    
     rest_matrix = np.random.rand(input_channels,1)
     math_matrix = np.random.rand(input_channels,1)
     memory_matrix = np.random.rand(input_channels,1)
@@ -638,10 +681,10 @@ def load_overlapped_data_multiview(file_dirs):
 
     inputs = []
     for i in range(window_size):
-        inputs.append(np.random.rand(1,input_rows,input_columns))
+        inputs.append(np.random.rand(1,input_rows,input_columns,depth))
 
     for i in range(window_size):
-        inputs.append(np.random.rand(1,input_channels))
+        inputs.append(np.random.rand(1,input_channels,depth))
 
     for i in range(number_classes):
         for j in range(window_size):
@@ -655,9 +698,7 @@ def load_overlapped_data_multiview(file_dirs):
         
     for i in range(window_size):
         inputs[i] = np.delete(inputs[i],0,0)
-        inputs[i] = np.reshape(inputs[i],(inputs[i].shape[0],input_rows,input_columns,1))
         inputs[i+window_size] = np.delete(inputs[i+window_size],0,0)
-        inputs[i+window_size] = np.reshape(inputs[i+window_size],(inputs[i+window_size].shape[0],input_channels,1))
         
     dict_y = {0:y_rest,1:y_math,2:y_mem,3:y_motor}
     
@@ -675,15 +716,16 @@ def load_overlapped_data_multiview(file_dirs):
     x_length = inputs[0].shape[0]
     for i in range(x_length):
         for j in range(window_size):
-            temp = inputs[j][i]
-            inside = temp[:,:,0]
-            norm = min_max_scale(inside)
-            inputs[j][i][:,:,0] = norm
+            for k in range(depth):
+                temp = inputs[j][i]
+                inside = temp[:,:,k]
+                norm = normalize(inside)
+                inputs[j][i][:,:,k] = norm
 
-            temp = inputs[j+window_size][i]
-            inside = temp[:,0]
-            norm = min_max_scale(inside)
-            inputs[j+window_size][i][:,0] = norm
+                temp = inputs[j+window_size][i]
+                inside = temp[:,k]
+                norm = normalize(inside)
+                inputs[j+window_size][i][:,k] = norm
 
     del temp
     del inside
@@ -1004,7 +1046,7 @@ def array_to_mesh(arr):
     
     return output
 
-
+#Assumes data already contained in Data folder
 training_file_dir = "Data/train"
 all_train_files = [f for f in listdir(training_file_dir) if isfile(join(training_file_dir, f))]
 train_files_dirs = []
