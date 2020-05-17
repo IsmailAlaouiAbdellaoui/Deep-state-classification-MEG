@@ -1,6 +1,7 @@
 import time
 import gc
 import sys
+import numpy as np
 
 import experiment_utils as eutils
 import data_utils as utils
@@ -246,6 +247,7 @@ def train(model_type,use_attention,setup,num_epochs):
                 print("Timespan of testing is : {}".format(time.time() - start_testing))
             avg = sum(accuracies_temp)/len(accuracies_temp)
             print("\n\nAverage testing accuracy : {0:.2f}".format(avg))
+            print("Standard deviation: {}".format(np.std(accuracies_temp)))
             print("Recording the average testing accuracy in a file")
             eutils.append_average_test(experiment_number,epoch+1,avg,model_type)
 
