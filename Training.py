@@ -43,10 +43,10 @@ dense3_nodes = dense_nodes
 dense3_activation = "relu"
 final_dropout = 0.5
 
-depth = 10
+#depth = 10
 
 
-def get_cascade_model():
+def get_cascade_model(depth):
     cascade_object = Cascade(window_size,conv1_filters,conv2_filters,conv3_filters,
                 conv1_kernel_shape,conv2_kernel_shape,conv3_kernel_shape,
                 padding1,padding2,padding3,conv1_activation,conv2_activation,
@@ -56,7 +56,7 @@ def get_cascade_model():
     cascade_model = cascade_object.model
     return cascade_model, cascade_object
 
-def get_cascade_model_attention():
+def get_cascade_model_attention(depth):
     cascade_attention_object = CascadeAttention(window_size,conv1_filters,conv2_filters,conv3_filters,
                 conv1_kernel_shape,conv2_kernel_shape,conv3_kernel_shape,
                 padding1,padding2,padding3,conv1_activation,conv2_activation,
@@ -66,7 +66,7 @@ def get_cascade_model_attention():
     cascade_attention_model = cascade_attention_object.model
     return cascade_attention_model, cascade_attention_object
 
-def get_multiview_model():
+def get_multiview_model(depth):
     multiview_object = Multiview(window_size,conv1_filters,conv2_filters,conv3_filters,
              conv1_kernel_shape,conv2_kernel_shape,conv3_kernel_shape,
              padding1,padding2,padding3,conv1_activation,conv2_activation,
@@ -75,7 +75,7 @@ def get_multiview_model():
     multiview_model = multiview_object.model
     return multiview_model, multiview_object
 
-def get_multiview_model_attention():
+def get_multiview_model_attention(depth):
     multiview_attention_object = MultiviewAttention(window_size,conv1_filters,conv2_filters,conv3_filters,
              conv1_kernel_shape,conv2_kernel_shape,conv3_kernel_shape,
              padding1,padding2,padding3,conv1_activation,conv2_activation,
@@ -92,7 +92,7 @@ batch_size = 64
 
 
 
-def train(model_type,use_attention,setup,num_epochs):
+def train(model_type,use_attention,setup,num_epochs,depth):
     if setup == 0:#used for quick tests
         subjects = ['105923']
         list_subjects_test = ['212318']
@@ -105,15 +105,15 @@ def train(model_type,use_attention,setup,num_epochs):
         
     if model_type == "Cascade":
         if use_attention==False:
-            model,model_object = get_cascade_model()
+            model,model_object = get_cascade_model(depth)
         else:
-            model,model_object = get_cascade_model_attention()
+            model,model_object = get_cascade_model_attention(depth)
     
     else:
         if use_attention == False:
-            model,model_object = get_multiview_model()
+            model,model_object = get_multiview_model(depth)
         else:
-            model,model_object = get_multiview_model_attention()
+            model,model_object = get_multiview_model_attention(depth)
         
     
     subjects_string = ",".join([subject for subject in subjects])
@@ -274,6 +274,9 @@ parser.add_argument('-a','--attention',type=bool,help="Please choose whether you
 parser.add_argument('-e','--epochs',type=int,help="Please choose the number of \
                     epochs, by default 1 epoch", default=1)
 
+parser.add_argument('-d','--depth',type=int,help="Please choose the depth of the\
+                    input tensors, by default 10 epoch", default=10)
+
 args = parser.parse_args()
 
 
@@ -301,4 +304,4 @@ if args.epochs < 1:
     print("Invalid epoch number, exiting ...")
     sys.exit()
 
-train(model_type,use_attention,args.setup,args.epochs)
+train(model_type,use_attention,args.setup,args.epochs,args.depth)

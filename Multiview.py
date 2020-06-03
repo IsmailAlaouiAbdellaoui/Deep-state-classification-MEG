@@ -58,7 +58,7 @@ class Multiview:
             inputs_cnn.append(input_cnn)
             inputs_lstm.append(input_lstm)
             
-            conv1 = Conv2D(self.conv1_filters, self.conv1_kernel_shape, padding = self.padding1,activation=self.conv1_activation,input_shape=(self.mesh_rows,self.mesh_columns,1),name = str(i+1)+"conv"+str(1))(input_cnn)
+            conv1 = Conv2D(self.conv1_filters, self.conv1_kernel_shape, padding = self.padding1,activation=self.conv1_activation,input_shape=(self.mesh_rows,self.mesh_columns,self.depth),name = str(i+1)+"conv"+str(1))(input_cnn)
               
             conv2 = Conv2D(self.conv2_filters, self.conv2_kernel_shape, padding = self.padding2, activation=self.conv2_activation)(conv1)
             

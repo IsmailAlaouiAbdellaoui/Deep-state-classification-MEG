@@ -261,7 +261,8 @@ def order_arranging(rest_list,mem_list,math_list,motor_list):
         ordered_list.append(value4)
     return ordered_list
 
-def multi_processing_cascade(directory, length, num_cpu):
+def multi_processing_cascade(directory, length, num_cpu,depth):
+    
     assert len(directory) == length*num_cpu,"Directory does not have {} files.".format(length*num_cpu)
     window_size = 10
     input_rows = 20
@@ -270,9 +271,11 @@ def multi_processing_cascade(directory, length, num_cpu):
 
     for i in range(num_cpu):
         split.append(directory[i*length:(i*length)+length])
+        
+    for i in range(len(split)):
+        split[i] = (split[i],depth)
 
     pool = Pool(num_cpu)
-    
     results = pool.map(load_overlapped_data_cascade, split)
     pool.terminate()
     pool.join()
@@ -286,17 +289,17 @@ def multi_processing_cascade(directory, length, num_cpu):
     
     x={}
 
-    x_temp = np.random.rand(1,input_rows,input_columns,1)
+    x_temp = np.random.rand(1,input_rows,input_columns,depth)
     for i in range(window_size):
         for j in range(len(results)):
             x_temp = np.concatenate((x_temp,results[j][0]["input"+str(i+1)]))
         x_temp= np.delete(x_temp,0,0)
         x["input"+str(i+1)] = x_temp
-        x_temp = np.random.rand(1,input_rows,input_columns,1)
+        x_temp = np.random.rand(1,input_rows,input_columns,depth)
         gc.collect()
     return x, y
 
-def multi_processing_multiview(directory, length, num_cpu):
+def multi_processing_multiview(directory, length, num_cpu,depth):
     assert len(directory) == length*num_cpu,"Directory does not have {} files.".format(length*num_cpu)
     window_size = 10
     input_rows = 20
@@ -306,6 +309,9 @@ def multi_processing_multiview(directory, length, num_cpu):
 
     for i in range(num_cpu):
         split.append(directory[i*length:(i*length)+length])
+        
+    for i in range(len(split)):
+        split[i] = (split[i],depth)
 
     pool = Pool(num_cpu)
     results = pool.map(load_overlapped_data_multiview, split)
@@ -321,8 +327,8 @@ def multi_processing_multiview(directory, length, num_cpu):
     
     x={}
 
-    x_temp = np.random.rand(1,input_rows,input_columns,1)
-    x_lstm = np.random.rand(1,input_channels,1)
+    x_temp = np.random.rand(1,input_rows,input_columns,depth)
+    x_lstm = np.random.rand(1,input_channels,depth)
     for i in range(window_size):
         for j in range(len(results)):
             x_temp = np.concatenate((x_temp,results[j][0]["input"+str(i+1)]))
@@ -332,8 +338,8 @@ def multi_processing_multiview(directory, length, num_cpu):
         x_lstm= np.delete(x_lstm,0,0)
         x["input"+str(i+1)] = x_temp
         x["input"+str(i+window_size+1)] = x_lstm
-        x_temp = np.random.rand(1,input_rows,input_columns,1)
-        x_lstm = np.random.rand(1,input_channels,1)
+        x_temp = np.random.rand(1,input_rows,input_columns,depth)
+        x_lstm = np.random.rand(1,input_channels,depth)
         gc.collect()
 
     return x, y
@@ -362,6 +368,50 @@ def get_dataset_name(file_name_with_dir):
     dataset_name = "_".join(temp)
     return dataset_name
 
+#def preprocess_data_type(matrix, window_size,depth):
+#    input_rows = 20
+#    input_columns = 21
+#    input_channels = 248
+#
+#    if(matrix.shape[1] == 1):
+#        length = 1
+#    else:
+#        length = closestNumber(int(matrix.shape[1]) - window_size*depth,window_size*depth)
+#        
+#    meshes = np.zeros((input_rows,input_columns,length),dtype=np.float64)
+#    for i in range(length):
+#        array_time_step = np.reshape(matrix[:,i],(1,input_channels))
+#        meshes[:,:,i] = array_to_mesh(array_time_step)
+#
+#    del matrix
+#    if depth == 1:
+#        inputs = get_input_lists(meshes, get_lists_indexes(length,window_size),window_size,length)
+#    else:
+#        inputs = []
+#        if length == 1:
+#            for i in range(window_size):
+#                inputs.append(np.zeros((0,input_rows,input_columns,depth)))
+#        else:
+#            var = int(window_size*depth/2)    # difference between values in columns
+#            var2 = int((length-window_size*depth/2)/var) # number of rows
+#
+#            for j in range(var2):
+#                if j == 0:
+#                    for i in range(window_size):
+#                        inputs.append(np.zeros((var2,input_rows,input_columns,depth)))
+#                        inputs[i][j] = meshes[:,:,i*depth:(i+1)*depth]
+#                else:
+#                    for i in range(window_size):
+#                        inputs[i][j] = meshes[:,:,var*j+i*depth:var*j+(i+1)*depth]
+#
+#    del meshes
+#    gc.collect()
+#    
+#    number_y_labels = int((length/(window_size*depth)*2)-1)
+#    y = np.ones((number_y_labels,1),dtype=np.int8)
+#    return inputs, y
+    
+
 def preprocess_data_type(matrix, window_size,depth):
     input_rows = 20
     input_columns = 21
@@ -378,25 +428,25 @@ def preprocess_data_type(matrix, window_size,depth):
         meshes[:,:,i] = array_to_mesh(array_time_step)
 
     del matrix
-    if depth == 1:
-        inputs = get_input_lists(meshes, get_lists_indexes(length,window_size),window_size,length)
+#    if depth == 1:
+#        inputs = get_input_lists(meshes, get_lists_indexes(length,window_size),window_size,length)
+#    else:
+    inputs = []
+    if length == 1:
+        for i in range(window_size):
+            inputs.append(np.zeros((0,input_rows,input_columns,depth)))
     else:
-        inputs = []
-        if length == 1:
-            for i in range(window_size):
-                inputs.append(np.zeros((0,input_rows,input_columns,depth)))
-        else:
-            var = int(window_size*depth/2)    # difference between values in columns
-            var2 = int((length-window_size*depth/2)/var) # number of rows
+        var = int(window_size*depth/2)    # difference between values in columns
+        var2 = int((length-window_size*depth/2)/var) # number of rows
 
-            for j in range(var2):
-                if j == 0:
-                    for i in range(window_size):
-                        inputs.append(np.zeros((var2,input_rows,input_columns,depth)))
-                        inputs[i][j] = meshes[:,:,i*depth:(i+1)*depth]
-                else:
-                    for i in range(window_size):
-                        inputs[i][j] = meshes[:,:,var*j+i*depth:var*j+(i+1)*depth]
+        for j in range(var2):
+            if j == 0:
+                for i in range(window_size):
+                    inputs.append(np.zeros((var2,input_rows,input_columns,depth)))
+                    inputs[i][j] = meshes[:,:,i*depth:(i+1)*depth]
+            else:
+                for i in range(window_size):
+                    inputs[i][j] = meshes[:,:,var*j+i*depth:var*j+(i+1)*depth]
 
     del meshes
     gc.collect()
@@ -464,21 +514,21 @@ def reshape_input_dictionary(input_dict, output_list, batch_size, depth):
     output_list = output_list[0:length_adapted_batch_size]
     return input_dict, output_list
 
-def load_overlapped_data_cascade(file_dirs):
+def load_overlapped_data_cascade(file_dirs_depth):
     
     input_rows = 20
     input_columns = 21
     input_channels = 248   
     number_classes = 4
     window_size = 10
-    depth = 10
+    depth = file_dirs_depth[1]
 
     rest_matrix = np.random.rand(input_channels,1)
     math_matrix = np.random.rand(input_channels,1)
     memory_matrix = np.random.rand(input_channels,1)
     motor_matrix = np.random.rand(input_channels,1)
  
-    files_to_load = file_dirs
+    files_to_load = file_dirs_depth[0]
     
     for i in range(len(files_to_load)):
         if "rest" in files_to_load[i]:
@@ -591,21 +641,21 @@ def load_overlapped_data_cascade(file_dirs):
 
     return data_dict,y
 
-def load_overlapped_data_multiview(file_dirs):
+def load_overlapped_data_multiview(file_dirs_depth):
 
     input_rows = 20
     input_columns = 21
     input_channels = 248
     number_classes = 4
     window_size = 10
-    depth = 10
+    depth = file_dirs_depth[1]
     
     rest_matrix = np.random.rand(input_channels,1)
     math_matrix = np.random.rand(input_channels,1)
     memory_matrix = np.random.rand(input_channels,1)
     motor_matrix = np.random.rand(input_channels,1)
 
-    files_to_load = file_dirs
+    files_to_load = file_dirs_depth[0]
 
     for i in range(len(files_to_load)):
         if "rest" in files_to_load[i]:
