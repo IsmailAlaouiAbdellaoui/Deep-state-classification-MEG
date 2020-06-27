@@ -114,9 +114,9 @@ batch_size = 64
 
 
 
-def train(model_type,use_attention,setup,num_epochs,typeattention,depth):
+def train(model_type,setup,num_epochs,attention,depth):
     if setup == 0:#used for quick tests
-        subjects = ['105923']
+        subjects = ['212318']
         list_subjects_test = ['212318']
     if setup == 1:
         subjects = ['105923','164636','133019']
@@ -126,24 +126,21 @@ def train(model_type,use_attention,setup,num_epochs,typeattention,depth):
         list_subjects_test = ['204521','212318','162935','601127','725751','735148']
         
     if model_type == "Cascade":
-        if use_attention==False:
+        if attention =="no":
             model,model_object = get_cascade_model(depth)
-        else:
-            if typeattention == "self":
-                model,model_object = get_cascade_model_attention(depth)
-            else:
-                model,model_object = get_cascade_model_global_attention(depth)
+        elif attention =="self":
+            model,model_object = get_cascade_model_attention(depth)
+        elif attention =="global":
+            model,model_object = get_cascade_model_global_attention(depth)
     
     else:
-        if use_attention == False:
+        if attention == "no":
             model,model_object = get_multiview_model(depth)
-        else:
-            if typeattention == "self":
-                model,model_object = get_multiview_model_attention(depth)
-            else:
-                model,model_object = get_multiview_model_global_attention(depth)
+        elif attention == "self":
+            model,model_object = get_multiview_model_attention(depth)
+        elif attention == "global":
+            model,model_object = get_multiview_model_global_attention(depth)
         
-    
     subjects_string = ",".join([subject for subject in subjects])
     comment = "Training with subjects : " + subjects_string
     
@@ -162,7 +159,7 @@ def train(model_type,use_attention,setup,num_epochs,typeattention,depth):
 
     model.compile(optimizer = Adam(learning_rate=0.0001), loss="categorical_crossentropy", metrics=["accuracy"])
     
-    experiment_number = eutils.on_train_begin(model_object,model_type,use_attention,setup)
+    experiment_number = eutils.on_train_begin(model_object,model_type,attention,setup)
     for epoch in range(num_epochs):
         print("\n\n Epoch",epoch+1)
         for subject in subjects:
@@ -285,7 +282,7 @@ def train(model_type,use_attention,setup,num_epochs,typeattention,depth):
     print("Training took {:.2f} seconds".format(time_span))
     eutils.on_train_end(experiment_number,model_type)
     eutils.save_training_time(experiment_number, time_span,model_type)
-    eutils.write_comment(experiment_number,comment,model_type,setup,use_attention)
+    eutils.write_comment(experiment_number,comment,model_type,setup,attention)
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -295,13 +292,10 @@ parser.add_argument('-s', '--setup', type=int, help="Please select a number betw
 
 parser.add_argument('-m','--model', type=str,help="Please choose the type of model \
                     you want to train (cascade or multiview)",choices=['cascade', 'multiview'])
-
-parser.add_argument('-a','--attention',type=bool,help="Please choose whether you \
-                    want to use self attention (True or False), by default no attention", default=False)
                     
-parser.add_argument('-t','--typeattention',type=str,help="Please choose the type of attention. \
-                    Is it self-attention only or self + global attention ? (self or global) By default self attention only",\
-                    choices=['self','global'],default = "self")
+parser.add_argument('-attt','--attention',type=str,help="Please choose the type of attention. \
+                    Is it no attention or self-attention only or self + global attention",\
+                    choices=['no','self','global'],default = "no")
 
 parser.add_argument('-e','--epochs',type=int,help="Please choose the number of \
                     epochs, by default 1 epoch", default=1)
@@ -321,13 +315,6 @@ else:
     print("No model chosen, exiting ...")
     sys.exit()
     
-if args.attention == True:
-    use_attention = True
-    attention = "with"
-else:
-    use_attention = False
-    attention = "without"
-
 if args.setup < 0 or args.setup > 3:
     print("Invalid setup number, exiting ...")
     sys.exit()
@@ -336,4 +323,4 @@ if args.epochs < 1:
     print("Invalid epoch number, exiting ...")
     sys.exit()
 
-train(model_type,use_attention,args.setup,args.epochs,args.typeattention,args.depth)
+train(model_type,args.setup,args.epochs,args.attention,args.depth)
