@@ -10,7 +10,9 @@ from tensorflow.keras.optimizers import Adam
 
 from CascadeAttention import CascadeAttention
 from Cascade import Cascade
+from CascadeSelfGlobalAttention import CascadeSelfGlobalAttention
 from MultiviewAttention import MultiviewAttention
+from MultiviewSelfGlobalAttention import MultiviewSelfGlobalAttention
 from Multiview import Multiview
 
 
@@ -61,10 +63,21 @@ def get_cascade_model_attention(depth):
                 conv1_kernel_shape,conv2_kernel_shape,conv3_kernel_shape,
                 padding1,padding2,padding3,conv1_activation,conv2_activation,
                 conv3_activation,dense_nodes,dense_activation,dense_dropout,
-                lstm1_cells,lstm2_cells,dense3_nodes,dense3_activation,
+                lstm1_cells,lstm2_cells,dense3_nodes,dense3_activation,depth,
                 final_dropout)
     cascade_attention_model = cascade_attention_object.model
     return cascade_attention_model, cascade_attention_object
+
+def get_cascade_model_global_attention(depth):
+    cascade_attention_object = CascadeSelfGlobalAttention(window_size,conv1_filters,conv2_filters,conv3_filters,
+                conv1_kernel_shape,conv2_kernel_shape,conv3_kernel_shape,
+                padding1,padding2,padding3,conv1_activation,conv2_activation,
+                conv3_activation,dense_nodes,dense_activation,dense_dropout,
+                lstm1_cells,lstm2_cells,dense3_nodes,dense3_activation,depth,
+                final_dropout)
+    cascade_attention_model = cascade_attention_object.model
+    return cascade_attention_model, cascade_attention_object
+
 
 def get_multiview_model(depth):
     multiview_object = Multiview(window_size,conv1_filters,conv2_filters,conv3_filters,
@@ -83,6 +96,15 @@ def get_multiview_model_attention(depth):
              lstm1_cells,lstm2_cells,dense3_nodes,dense3_activation)
     multiview_attention_model = multiview_attention_object.model
     return multiview_attention_model, multiview_attention_object
+
+def get_multiview_model_global_attention(depth):
+    multiview_attention_object = MultiviewSelfGlobalAttention(window_size,conv1_filters,conv2_filters,conv3_filters,
+             conv1_kernel_shape,conv2_kernel_shape,conv3_kernel_shape,
+             padding1,padding2,padding3,conv1_activation,conv2_activation,
+             conv3_activation,dense_nodes,dense_activation,depth,
+             lstm1_cells,lstm2_cells,dense3_nodes,dense3_activation)
+    multiview_attention_model = multiview_attention_object.model
+    return multiview_attention_model, multiview_attention_object
     
 
 train_loss_results = []
@@ -92,7 +114,7 @@ batch_size = 64
 
 
 
-def train(model_type,use_attention,setup,num_epochs,depth):
+def train(model_type,use_attention,setup,num_epochs,typeattention,depth):
     if setup == 0:#used for quick tests
         subjects = ['105923']
         list_subjects_test = ['212318']
@@ -107,13 +129,19 @@ def train(model_type,use_attention,setup,num_epochs,depth):
         if use_attention==False:
             model,model_object = get_cascade_model(depth)
         else:
-            model,model_object = get_cascade_model_attention(depth)
+            if typeattention == "self":
+                model,model_object = get_cascade_model_attention(depth)
+            else:
+                model,model_object = get_cascade_model_global_attention(depth)
     
     else:
         if use_attention == False:
             model,model_object = get_multiview_model(depth)
         else:
-            model,model_object = get_multiview_model_attention(depth)
+            if typeattention == "self":
+                model,model_object = get_multiview_model_attention(depth)
+            else:
+                model,model_object = get_multiview_model_global_attention(depth)
         
     
     subjects_string = ",".join([subject for subject in subjects])
@@ -270,6 +298,10 @@ parser.add_argument('-m','--model', type=str,help="Please choose the type of mod
 
 parser.add_argument('-a','--attention',type=bool,help="Please choose whether you \
                     want to use self attention (True or False), by default no attention", default=False)
+                    
+parser.add_argument('-t','--typeattention',type=str,help="Please choose the type of attention. \
+                    Is it self-attention only or self + global attention ? (self or global) By default self attention only",\
+                    choices=['self','global'],default = "self")
 
 parser.add_argument('-e','--epochs',type=int,help="Please choose the number of \
                     epochs, by default 1 epoch", default=1)
@@ -304,4 +336,4 @@ if args.epochs < 1:
     print("Invalid epoch number, exiting ...")
     sys.exit()
 
-train(model_type,use_attention,args.setup,args.epochs,args.depth)
+train(model_type,use_attention,args.setup,args.epochs,args.typeattention,args.depth)

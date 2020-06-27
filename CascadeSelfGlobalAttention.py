@@ -8,7 +8,7 @@ from tensorflow.keras.layers import Conv2D, LSTM
 from tensorflow.keras.layers import Lambda,Dropout,dot,Activation
 from tensorflow.keras.layers import BatchNormalization
 
-class CascadeAttention:
+class CascadeSelfGlobalAttention:
     def __init__(self, window_size,conv1_filters,conv2_filters,conv3_filters,
                  conv1_kernel_shape,conv2_kernel_shape,conv3_kernel_shape,
                  padding1,padding2,padding3,conv1_activation,conv2_activation,

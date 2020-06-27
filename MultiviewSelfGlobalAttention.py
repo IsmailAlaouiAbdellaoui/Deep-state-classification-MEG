@@ -1,9 +1,9 @@
-from tensorflow.keras.models import Model,BatchNormalization, Lambda,dot
-from tensorflow.keras.layers import Conv2D, Dense, Flatten, Input, Activation
-from tensorflow.keras.layers import LSTM, concatenate, Permute, Add
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Conv2D, Dense, Flatten, Input, Activation, BatchNormalization
+from tensorflow.keras.layers import LSTM, concatenate, Permute, Add, Lambda,dot
 import tensorflow as tf
 
-class MultiviewAttention:
+class MultiviewSelfGlobalAttention:
     def __init__(self, window_size,conv1_filters,conv2_filters,conv3_filters,
                  conv1_kernel_shape,conv2_kernel_shape,conv3_kernel_shape,
                  padding1,padding2,padding3,conv1_activation,conv2_activation,
