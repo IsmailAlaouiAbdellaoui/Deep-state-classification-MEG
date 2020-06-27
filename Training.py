@@ -116,7 +116,7 @@ batch_size = 64
 
 def train(model_type,setup,num_epochs,attention,depth):
     if setup == 0:#used for quick tests
-        subjects = ['212318']
+        subjects = ['105923']
         list_subjects_test = ['212318']
     if setup == 1:
         subjects = ['105923','164636','133019']
