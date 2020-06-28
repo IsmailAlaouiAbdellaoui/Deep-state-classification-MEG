@@ -7,7 +7,7 @@ This project aims to perform cross-subject multi-class classification based on M
 📊 Results
 -----
 
-The results for cross-subject testing of models that are trained with only 12 subjects on 6 testing subjects are shown below. 
+The best results for cross-subject testing of models that are trained with 12 subjects and tested on 6 subjects are shown below. 
 
 .. figure:: results.svg
 
@@ -15,19 +15,66 @@ The results for cross-subject testing of models that are trained with only 12 su
 💻 Installation
 -----
 
-The required modules can be installed  via
+The required modules can be installed  via:
 
-```
-pip install -r requirements.txt
-```
+.. code:: bash
+
+    pip install -r requirements.txt
+
+
+Quick Start
+~~~~~~~~~~~
+To train the AA-MultiviewNet or the AA-CascadeNet:
+
+.. code:: bash
+
+    cd AA-Cascade_AA-Multiview
+    python Training.py --model cascade --setup 2 --attention no --epochs 10 --depth 100
+
+.. code::
+
+    usage: Training.py [-h] [-s SETUP] [-m MODEL {cascade,multiview}] 
+                       [-a ATTENTION {no,self,global}] [-e EPOCHS] [-d DEPTH]
+                       
+    list of arguments:
+    -h, --help             show this help message and exit
+    -s, --setup            Please select a number between 0 and 2 to choose the setup of the training (default = 0)
+    -m, --model            Please choose the type of model you want to train (cascade or multiview)
+    -a, --attention        Please choose the type of attention. Is it no attention, or
+                           self-attention only, or self + global attention
+    -e, --epochs           Please choose the number of epochs, by default 1 epoch
+    -d, --depth            Please choose the depth of the input tensors, by default 10
+    
+To test the best configurations (no attention, self-attention, self + global attention):
+
+.. code:: bash
+    
+    python Testing.py -a self
+
+.. code::
+
+    usage: Testing.py [-h] [-a ATTENTION {no,self,global}] 
+    
+    list of arguments:
+    -h, --help             show this help message and exit
+    -a, --attention        Please choose which type of model to load : no attention, self-attention only (self), or 
+                           self + global attention (global), by default self attention
+                           
+To train the AA-EEGNet:
+
+.. code:: bash
+
+    cd AA-EEGNet
+
+
 
   
 📂 Data
 -----
 
-- Data for the Cascade and the Multiview networks at the following `link <https://mega.nz/file/KcsXELzR#HLpcYcP7g5VM4NdAIM4M-hxXjyhtLncbrj4xUh6Zr9k>`__
+- Data for the AA-CascadeNet and the AA-MultiviewNet networks at the following `link <https://mega.nz/file/KcsXELzR#HLpcYcP7g5VM4NdAIM4M-hxXjyhtLncbrj4xUh6Zr9k>`__
 
-- Data for EEGNet network at the following `link <https://mega.nz/file/GVk0EKCI#GX6agShuNWVx2ucktIiJPRkwLQDQCI6BNeFP-tq5pwM>`__
+- Data for AA-EEGNet at the following `link <https://mega.nz/file/GVk0EKCI#GX6agShuNWVx2ucktIiJPRkwLQDQCI6BNeFP-tq5pwM>`__
 
 Both datasets contain the same subjects for training, validation, and testing, but they slightly differ in the trials selected.
 
@@ -39,7 +86,7 @@ The data must be downloaded and unzipped in the same directory as the scripts. F
 
 - The test script loads the model previously saved and evaluate it with the indicated subjects.
 
-Additionally, within the EGGNet directory, a script to download and preprocess the subjects directly from the HCP source can be found (just in case the user wants to use different patients). 
+Additionally, within the AA-EGGNet directory, a script to download and preprocess the subjects directly from the HCP source can be found (in case the user wants to use different patients). 
 
 🔗 Citation
 -----
