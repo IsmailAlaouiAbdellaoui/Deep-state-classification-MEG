@@ -293,7 +293,7 @@ parser.add_argument('-s', '--setup', type=int, help="Please select a number betw
 parser.add_argument('-m','--model', type=str,help="Please choose the type of model \
                     you want to train (cascade or multiview)",choices=['cascade', 'multiview'])
                     
-parser.add_argument('-attt','--attention',type=str,help="Please choose the type of attention. \
+parser.add_argument('-a','--attention',type=str,help="Please choose the type of attention. \
                     Is it no attention or self-attention only or self + global attention",\
                     choices=['no','self','global'],default = "no")
 
