@@ -59,6 +59,9 @@ Both datasets contain the same subjects for training, validation, and testing, b
 📜 Scripts
 -----
 The data must be downloaded and unzipped in the same directory as the scripts. For each model:
+
 - The training script trains and saves the model with the indicated subjects.
+
 - The test script loads the model previously saved and evaluate it with the indicated subjects.
+
 Additionally, within the EGGNet directory, a script to download and preprocess the subjects directly from the HCP source can be found (just in case the user wants to use different patients). 
