@@ -4,18 +4,6 @@
 This project aims to perform cross-subject multi-class classification based on MEG signals to infer the subject's state. The implemented models are AA-CascadeNet, AA-MultiviewNet and AA-EEGNet, all of which incorporates both self and global attention mechanisms. 
 
 
-📑 States
------
-
-💤 Resting
-
-💨 Motor Task
-
-💾 Working Memory Task
-
-➗ Math Task 
-
-
 📊 Results
 -----
 
