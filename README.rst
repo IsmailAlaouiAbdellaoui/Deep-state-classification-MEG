@@ -7,7 +7,7 @@ If you decide to cite our project in your paper or use our data, please use the 
 
 .. code:: bibtex
 
-  @misc{MEGdecoding2020,
+  @misc{alaoui2020meg,
      title={Deep brain state classification of MEG data},
      author={Alaoui Abdellaoui, Ismail and García Fernández, Jesús and Şahinli, Caner and Mehrkanoon, Siamak},
      year={2020},
