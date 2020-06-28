@@ -28,7 +28,7 @@ To train the AA-MultiviewNet or the AA-CascadeNet:
 
 .. code:: bash
 
-    cd AA-Cascade_AA-Multiview
+    cd AA-CascadeNet_AA-MultiviewNet
     python Training.py --model cascade --setup 2 --attention no --epochs 10 --depth 100
 
 .. code::
@@ -45,7 +45,7 @@ To train the AA-MultiviewNet or the AA-CascadeNet:
     -e, --epochs           Please choose the number of epochs, by default 1 epoch
     -d, --depth            Please choose the depth of the input tensors, by default 10
     
-To test the best configurations (no attention, self-attention, self + global attention):
+To test the pretrained best configurations (no attention, self-attention, self + global attention):
 
 .. code:: bash
     
@@ -65,6 +65,11 @@ To train the AA-EEGNet:
 .. code:: bash
 
     cd AA-EEGNet
+Run Train.py
+
+To test the AA-EEGNet with a pretrained model:
+
+Run Test.py
 
 
 
