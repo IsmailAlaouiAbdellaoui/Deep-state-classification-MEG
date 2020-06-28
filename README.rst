@@ -93,6 +93,8 @@ The data must be downloaded and unzipped in the same directory as the scripts.
 📜 Scripts
 -----
 
+- The scripts contain the models, the data preprocessing, as well as the training and testing files.
+
 - The training script trains the model with the subjects in the train/validate folders and saves the intermediate models and weights.
 
 - The test script loads the pretrained model and evaluate it with the indicated subjects.
