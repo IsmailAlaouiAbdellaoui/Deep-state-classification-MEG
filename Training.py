@@ -83,8 +83,8 @@ def get_multiview_model(depth):
     multiview_object = Multiview(window_size,conv1_filters,conv2_filters,conv3_filters,
              conv1_kernel_shape,conv2_kernel_shape,conv3_kernel_shape,
              padding1,padding2,padding3,conv1_activation,conv2_activation,
-             conv3_activation,dense_nodes,dense_activation,depth,
-             lstm1_cells,lstm2_cells,dense3_nodes,dense3_activation)
+             conv3_activation,dense_nodes,dense_activation,
+             lstm1_cells,lstm2_cells,dense3_nodes,dense3_activation,depth)
     multiview_model = multiview_object.model
     return multiview_model, multiview_object
 
@@ -92,8 +92,8 @@ def get_multiview_model_attention(depth):
     multiview_attention_object = MultiviewAttention(window_size,conv1_filters,conv2_filters,conv3_filters,
              conv1_kernel_shape,conv2_kernel_shape,conv3_kernel_shape,
              padding1,padding2,padding3,conv1_activation,conv2_activation,
-             conv3_activation,dense_nodes,dense_activation,depth,
-             lstm1_cells,lstm2_cells,dense3_nodes,dense3_activation)
+             conv3_activation,dense_nodes,dense_activation,
+             lstm1_cells,lstm2_cells,dense3_nodes,dense3_activation,depth)
     multiview_attention_model = multiview_attention_object.model
     return multiview_attention_model, multiview_attention_object
 
