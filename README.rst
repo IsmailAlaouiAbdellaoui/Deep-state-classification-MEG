@@ -24,7 +24,7 @@ The results for cross-subject testing of models that are trained with only 12 su
 .. figure:: results.svg
 
 
-💻 Commands
+💻 Installation
 -----
 
 The required modules can be installed  via
