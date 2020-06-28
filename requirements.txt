@@ -1,0 +1,16 @@
+numpy
+scipy
+matplotlib
+pysurfer
+scikit-learn
+numba
+nibabel
+pandas
+DIPY
+pyvista
+pyriemann
+mne
+re
+tensorflow
+tensorflow-gpu
+boto3
