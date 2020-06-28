@@ -65,11 +65,16 @@ To train the AA-EEGNet:
 .. code:: bash
 
     cd AA-EEGNet
-Run Train.py
+    
+.. code:: bash
+    
+    python Train.py
 
 To test the AA-EEGNet with a pretrained model:
 
-Run Test.py
+.. code:: bash
+    
+    python Test.py
 
 
 
@@ -83,15 +88,16 @@ Run Test.py
 
 Both datasets contain the same subjects for training, validation, and testing, but they slightly differ in the trials selected.
 
+The data must be downloaded and unzipped in the same directory as the scripts.
+
 📜 Scripts
 -----
-The data must be downloaded and unzipped in the same directory as the scripts. For each model:
 
-- The training script trains and saves the model with the indicated subjects.
+- The training script trains the model with the subjects in the train/validate folders and saves the intermediate models and weights.
 
-- The test script loads the model previously saved and evaluate it with the indicated subjects.
+- The test script loads the pretrained model and evaluate it with the indicated subjects.
 
-Additionally, within the AA-EGGNet directory, a script to download and preprocess the subjects directly from the HCP source can be found (in case the user wants to use different patients). 
+Additionally, within the AA-EGGNet directory, a script to download and preprocess the subjects directly from the HCP source can be found (in case the user wants to use different patients). This script needs your own personal access key ID and secret access key from Amazon services.
 
 🔗 Citation
 -----
