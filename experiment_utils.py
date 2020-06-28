@@ -111,17 +111,20 @@ def create_info_epochs_file(experiment_number,model_type):
         with open(filename, "w") as file:
             file.write("")
 
-def on_train_begin(model_object,model_type,use_attention, setup):
+def on_train_begin(model_object,model_type,attention, setup):
     create_main_experiment_folder()
     create_model_folder(model_type)
     experiment_number = get_experiment_number(model_type)
     create_experiment_folder(experiment_number,model_type)
     print()
     print()
-    if use_attention: 
+    if attention == "no":
+        print("-"*7 +" Beginning of Experiment {} of the {} model using no Attention and training setup {}.".format(experiment_number,model_type,setup) + "-"*7)     
+    elif attention == "self":
         print("-"*7 +" Beginning of Experiment {} of the {} model using Self Attention and training setup {}.".format(experiment_number,model_type,setup) + "-"*7)     
-    else:
-        print("-"*7 +" Beginning of Experiment {} of the {} model without Attention and training setup {}.".format(experiment_number,model_type,setup) + "-"*7)
+    elif attention == "global":
+        print("-"*7 +" Beginning of Experiment {} of the {} model using Self and Global Attention and training setup {}.".format(experiment_number,model_type,setup) + "-"*7)
+    
     print()
     print()
     # self.create_experiment_folder(self.experiment_number)
@@ -145,15 +148,19 @@ def save_training_time(experiment_number,time,model_type):
     with open(filename, "a+") as file:
         file.write("\n\nTraining time: {:.2f} seconds".format(time))
 
-def write_comment(experiment_number,comment,model_type,setup,use_attention):
+def write_comment(experiment_number,comment,model_type,setup,attention):
     filename = "Experiments/"+model_type+"/Experiment"+str(experiment_number)+"/summary_model"+str(experiment_number)+".txt"
     with open(filename, "a+") as file:
         file.write("\nModel used : {}".format(model_type))
-        file.write("\nSelf Attention: {}".format(str(use_attention)))
         file.write("\nSubjects used: {}".format(comment))
-
-
-
+        
+        if attention == "no":
+            file.write("\nAttention: No")
+        elif attention == "self":
+            file.write("\nAttention: Self")
+        elif attention == "global":
+            file.write("\nAttention: Self and Global")
+   
 def on_epoch_end(epoch, accuracy, loss, val_accuracy, val_loss,experiment_number,model,model_type):
     try:
         append_to_epochs_file(experiment_number,epoch, accuracy, loss, val_accuracy, val_loss,model_type)
