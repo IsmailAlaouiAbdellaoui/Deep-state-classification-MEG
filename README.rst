@@ -33,19 +33,6 @@ The required modules can be installed  via
 pip install -r requirements.txt
 ```
 
-🔗 Citation
------
-
-If you decide to cite our project in your paper or use our data, please use the following bibtex reference:
-
-.. code:: bibtex
-
-  @misc{alaoui2020meg,
-     title={Deep brain state classification of MEG data},
-     author={Alaoui Abdellaoui, Ismail and García Fernández, Jesús and Şahinli, Caner and Mehrkanoon, Siamak},
-     year={2020},
-     url={}
-  }
   
 📂 Data
 -----
@@ -65,3 +52,17 @@ The data must be downloaded and unzipped in the same directory as the scripts. F
 - The test script loads the model previously saved and evaluate it with the indicated subjects.
 
 Additionally, within the EGGNet directory, a script to download and preprocess the subjects directly from the HCP source can be found (just in case the user wants to use different patients). 
+
+🔗 Citation
+-----
+
+If you decide to cite our project in your paper or use our data, please use the following bibtex reference:
+
+.. code:: bibtex
+
+  @misc{alaoui2020meg,
+     title={Deep brain state classification of MEG data},
+     author={Alaoui Abdellaoui, Ismail and García Fernández, Jesús and Şahinli, Caner and Mehrkanoon, Siamak},
+     year={2020},
+     url={}
+  }
