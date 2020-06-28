@@ -13,10 +13,10 @@ This project aims to perform cross-subject multi-class classification based on M
 
 💾 Working Memory Task
 
-❌ Story-Math Task 
+➗ Math Task 
 
 
-✏️ Results
+📊 Results
 -----
 
 The results for cross-subject testing of models that are trained with only 12 subjects on 6 testing subjects are shown below. 
@@ -33,7 +33,7 @@ The required modules can be installed  via
 pip install -r requirements.txt
 ```
 
-🚩 Citation
+🔗 Citation
 -----
 
 If you decide to cite our project in your paper or use our data, please use the following bibtex reference:
