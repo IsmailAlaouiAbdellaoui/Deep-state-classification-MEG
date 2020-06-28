@@ -14,13 +14,13 @@ parser.add_argument('-a', '--attention', type=str, default="self", help = "Pleas
 args = parser.parse_args()
 
 if args.attention == "no":
-    model_dir = "best_no_attention"
+    model_dir = "best_models/best_no_attention"
     depth = 100
 elif args.attention == "self":
-    model_dir = "best_self_attention"
+    model_dir = "best_models/best_self_attention"
     depth = 10
 elif args.attention == "global":
-    model_dir = "best_self_global_attention" 
+    model_dir = "best_models/best_self_global_attention" 
     depth = 10
 
 
