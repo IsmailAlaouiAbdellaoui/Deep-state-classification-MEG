@@ -182,8 +182,6 @@ class MultiviewSelfGlobalAttention:
         
         outputs_cnn = []
         lstm = []
-        
-
 
         for i in range(self.window_size):
             input_cnn = Input(shape=(self.mesh_rows,self.mesh_columns, self.depth), name = "input"+str(i+1))  

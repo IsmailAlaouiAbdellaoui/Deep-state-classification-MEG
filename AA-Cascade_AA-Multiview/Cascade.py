@@ -66,7 +66,6 @@ class Cascade:
           dense = Dense(self.dense_nodes, activation = self.dense_activation,name = str(i+1)+"dense")(flat)
           dense2 = Dropout(self.dense_dropout,name = str(i+1)+"dropout")(dense)
 
-          # dense2 = tensorflow.expand_dims(dense2,axis=1)
           dense2 = Lambda(lambda X: tensorflow.expand_dims(X, axis=1))(dense2)
           convs.append(dense2)
       
@@ -83,9 +82,9 @@ class Cascade:
 def test_cascade_model():
     window_size = 10
     
-    conv1_filters = 16
-    conv2_filters = 32
-    conv3_filters = 64
+    conv1_filters = 1
+    conv2_filters = 2
+    conv3_filters = 4
     
     conv1_kernel_shape = (7,7)
     conv2_kernel_shape = conv1_kernel_shape
@@ -99,11 +98,11 @@ def test_cascade_model():
     conv2_activation = conv1_activation
     conv3_activation = conv1_activation
     
-    dense_nodes = 1024
+    dense_nodes = 125
     dense_activation = "relu"
     dense_dropout = 0.5
     
-    lstm1_cells = 64
+    lstm1_cells = 10
     lstm2_cells = lstm1_cells
     
     dense3_nodes = dense_nodes

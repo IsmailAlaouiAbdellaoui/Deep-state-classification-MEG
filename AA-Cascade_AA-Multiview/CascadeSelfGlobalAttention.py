@@ -5,10 +5,10 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import Flatten
 from tensorflow.keras.layers import concatenate
 from tensorflow.keras.layers import Conv2D, LSTM
-from tensorflow.keras.layers import Lambda,Dropout
+from tensorflow.keras.layers import Lambda,Dropout,dot,Activation
 from tensorflow.keras.layers import BatchNormalization
 
-class CascadeAttention:
+class CascadeSelfGlobalAttention:
     def __init__(self, window_size,conv1_filters,conv2_filters,conv3_filters,
                  conv1_kernel_shape,conv2_kernel_shape,conv3_kernel_shape,
                  padding1,padding2,padding3,conv1_activation,conv2_activation,
@@ -55,7 +55,6 @@ class CascadeAttention:
         self.relative = False
         
         self.depth = depth
-        
         self.model = self.get_model()
 
     def shape_list(self,x):
@@ -170,6 +169,17 @@ class CascadeAttention:
       conv_out = Conv2D(filters=filters,kernel_size=k, padding='same')(X)
       attn_out = self.self_attention_2d(X, dk, dv, Nh, relative=relative)
       return tf.concat([conv_out, attn_out], axis=3)
+
+    def attention_block(self,hidden_states):
+        hidden_size = int(hidden_states.shape[2])
+        score_first_part = Dense(hidden_size, use_bias=False, name='attention_score_vec')(hidden_states)
+        h_t = Lambda(lambda x: x[:, -1, :], output_shape=(hidden_size,), name='last_hidden_state')(hidden_states)
+        score = dot([score_first_part, h_t], [2, 1], name='attention_score')
+        attention_weights = Activation('softmax', name='attention_weight')(score)
+        context_vector = dot([hidden_states, attention_weights], [1, 1], name='context_vector')
+        pre_activation = concatenate([context_vector, h_t], name='attention_output')
+        attention_vector = Dense(128, use_bias=False, activation='tanh', name='attention_vector')(pre_activation)
+        return attention_vector
   
     def get_model(self):
       inputs = []
@@ -190,20 +200,24 @@ class CascadeAttention:
           dense = Dense(self.dense_nodes, activation = self.dense_activation,name = str(i+1)+"dense")(flat)
           dense2 = Dropout(self.dense_dropout,name = str(i+1)+"dropout")(dense)
 
-          # dense2 = tensorflow.expand_dims(dense2,axis=1)
           dense2 = Lambda(lambda X: tf.expand_dims(X, axis=1))(dense2)
           
           convs.append(dense2)
           
       merge = concatenate(convs,axis=1,name = "merge")  
       lstm1 = LSTM(self.lstm1_cells, return_sequences=True,name = "lstm"+str(1))(merge)
-      lstm2 = LSTM(self.lstm2_cells, return_sequences=False,name = "lstm"+str(2))(lstm1)
-      dense3 = Dense(self.dense3_nodes, activation=self.dense3_activation,name = "dense"+str(2))(lstm2)
+      lstm2 = LSTM(self.lstm2_cells, return_sequences=True,name = "lstm"+str(2))(lstm1)
+
+      attention_output = self.attention_block(lstm2)
+      
+      dense3 = Dense(self.dense3_nodes, activation=self.dense3_activation,name = "dense"+str(2))(attention_output)
       final = Dropout(self.final_dropout, name = "dropout"+str(1))(dense3)
       output = Dense(self.number_classes, activation="softmax",name = "dense"+str(3))(final)
       
       model = Model(inputs=inputs, outputs=output)
       return model
+
+
 
 
 

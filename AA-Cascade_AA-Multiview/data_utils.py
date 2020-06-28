@@ -12,8 +12,8 @@ from tensorflow.keras.utils import to_categorical
 from multiprocessing import Pool
 from scipy import stats
 
-
-
+def normalize(array):
+    return stats.zscore(array)
 
 #Given the number "n", it finds the closest that is divisible by "m"
 #Used when splitting the matrices
@@ -27,9 +27,6 @@ def closestNumber(n, m) :
     if (abs(n - n1) < abs(n - n2)) : 
         return n1 
     return n2 
-
-def normalize(array):
-    return stats.zscore(array)
 
      
 #Reads the binary file given the subject and the type of state
@@ -48,7 +45,6 @@ def get_raw_data(subject, type_state, hcp_path):
     print("Problem in reading the file: The type of state '{}' might not be there for subject '{}'".format(type_state, subject))
     print("Exception error : ",e)
     return False
-
 
 
 def create_data_directory():
@@ -103,7 +99,7 @@ def create_h5_files(raw_matrix,subject,type_state):
     if subject == "212318" or subject == "162935" or subject == "204521" or subject == "601127" or subject == "725751" or subject == "735148":  
         #data goes to test folder
         for i in range(10):
-            start_index_col = number_columns_per_chunk * (i+4) # i+4 corresponds to an offset of 30s approximately
+            start_index_col = number_columns_per_chunk * (i+4) # i+4 corresponds to an offset of 30s (approximately) from  the start
             stop_index_col = start_index_col + number_columns_per_chunk - 1 
             destination_file = test_folder + type_state+'_'+subject+'_'+str(i+1)+'.h5'
             with h5py.File(destination_file, "w") as hf:
@@ -116,7 +112,7 @@ def create_h5_files(raw_matrix,subject,type_state):
                 destination_file = train_folder + type_state+'_'+subject+'_'+str(i+1)+'.h5'
             if i >= 8 and i < 10:
                 destination_file = validate_folder + type_state+'_'+subject+'_'+str(i+1)+'.h5'
-            start_index_col = number_columns_per_chunk * (i+4) # i+4 corresponds to an offset of 30s approximately
+            start_index_col = number_columns_per_chunk * (i+4) # i+4 corresponds to an offset of 30s (approximately) from  the start
             stop_index_col = start_index_col + number_columns_per_chunk - 1
             with h5py.File(destination_file, "w") as hf:
                 hf.create_dataset(type_state+'_'+subject, data=raw_matrix[ : , start_index_col : stop_index_col ])      
@@ -171,7 +167,6 @@ def download_subject(subject,personal_access_key_id,secret_access_key):
   s3 = boto3.client('s3', aws_access_key_id=personal_access_key_id, aws_secret_access_key=secret_access_key)
 
   folders = ["3-Restin","4-Restin","5-Restin","6-Wrkmem","7-Wrkmem","8-StoryM","9-StoryM","10-Motort","11-Motort"]
-  #filename_test = ["e,rfhp1.0Hz,COH"]
   filenames = ["c,rfDC", "config", "e,rfhp1.0Hz,COH", "e,rfhp1.0Hz,COH1"]
 
   print("Creating the directories for the subject '{}'".format(subject))
@@ -185,7 +180,6 @@ def download_subject(subject,personal_access_key_id,secret_access_key):
   print(filenames)
   print()
   print()
-  #print(filename_test)
   for filename in filenames:
     for folder in folders:
       if filename == "c,rfDC":
@@ -350,17 +344,7 @@ def get_lists_indexes(matrix_length,window_size):
     for i in range(window_size):
         indexes.append(np.arange(start=i, stop = matrix_length-(window_size-1-i),step = 5,dtype=np.int64))
     return indexes
-    
-def get_input_lists(matrix,indexes,window_size):
-    inputs = []
-    for i in range(window_size):
-        inputs.append(np.take(matrix,indexes[i],axis=0))
-    del matrix
-    return inputs
 
-def min_max_scale(matrix):
-    max,min = matrix.max(),matrix.min()
-    return (matrix-min)/(max-min)
 
 def get_dataset_name(file_name_with_dir):
     filename_without_dir = file_name_with_dir.split('/')[-1]
@@ -368,50 +352,7 @@ def get_dataset_name(file_name_with_dir):
     dataset_name = "_".join(temp)
     return dataset_name
 
-#def preprocess_data_type(matrix, window_size,depth):
-#    input_rows = 20
-#    input_columns = 21
-#    input_channels = 248
-#
-#    if(matrix.shape[1] == 1):
-#        length = 1
-#    else:
-#        length = closestNumber(int(matrix.shape[1]) - window_size*depth,window_size*depth)
-#        
-#    meshes = np.zeros((input_rows,input_columns,length),dtype=np.float64)
-#    for i in range(length):
-#        array_time_step = np.reshape(matrix[:,i],(1,input_channels))
-#        meshes[:,:,i] = array_to_mesh(array_time_step)
-#
-#    del matrix
-#    if depth == 1:
-#        inputs = get_input_lists(meshes, get_lists_indexes(length,window_size),window_size,length)
-#    else:
-#        inputs = []
-#        if length == 1:
-#            for i in range(window_size):
-#                inputs.append(np.zeros((0,input_rows,input_columns,depth)))
-#        else:
-#            var = int(window_size*depth/2)    # difference between values in columns
-#            var2 = int((length-window_size*depth/2)/var) # number of rows
-#
-#            for j in range(var2):
-#                if j == 0:
-#                    for i in range(window_size):
-#                        inputs.append(np.zeros((var2,input_rows,input_columns,depth)))
-#                        inputs[i][j] = meshes[:,:,i*depth:(i+1)*depth]
-#                else:
-#                    for i in range(window_size):
-#                        inputs[i][j] = meshes[:,:,var*j+i*depth:var*j+(i+1)*depth]
-#
-#    del meshes
-#    gc.collect()
-#    
-#    number_y_labels = int((length/(window_size*depth)*2)-1)
-#    y = np.ones((number_y_labels,1),dtype=np.int8)
-#    return inputs, y
     
-
 def preprocess_data_type(matrix, window_size,depth):
     input_rows = 20
     input_columns = 21
@@ -421,32 +362,30 @@ def preprocess_data_type(matrix, window_size,depth):
         length = 1
     else:
         length = closestNumber(int(matrix.shape[1]) - window_size*depth,window_size*depth)
-        
+
     meshes = np.zeros((input_rows,input_columns,length),dtype=np.float64)
     for i in range(length):
         array_time_step = np.reshape(matrix[:,i],(1,input_channels))
         meshes[:,:,i] = array_to_mesh(array_time_step)
+    
+    del matrix    
 
-    del matrix
-#    if depth == 1:
-#        inputs = get_input_lists(meshes, get_lists_indexes(length,window_size),window_size,length)
-#    else:
     inputs = []
     if length == 1:
         for i in range(window_size):
             inputs.append(np.zeros((0,input_rows,input_columns,depth)))
     else:
-        var = int(window_size*depth/2)    # difference between values in columns
-        var2 = int((length-window_size*depth/2)/var) # number of rows
+        column_offset = int(window_size*depth/2)    # difference between values in columns
+        num_rows_big_matrix = int((length-window_size*depth/2)/column_offset) # number of rows
 
-        for j in range(var2):
+        for j in range(num_rows_big_matrix):
             if j == 0:
                 for i in range(window_size):
-                    inputs.append(np.zeros((var2,input_rows,input_columns,depth)))
+                    inputs.append(np.zeros((num_rows_big_matrix,input_rows,input_columns,depth)))
                     inputs[i][j] = meshes[:,:,i*depth:(i+1)*depth]
             else:
                 for i in range(window_size):
-                    inputs[i][j] = meshes[:,:,var*j+i*depth:var*j+(i+1)*depth]
+                    inputs[i][j] = meshes[:,:,column_offset*j+i*depth:column_offset*j+(i+1)*depth]
 
     del meshes
     gc.collect()
@@ -470,25 +409,22 @@ def preprocess_data_type_lstm(matrix,window_size,depth):
     
     del matrix
 
-    if depth == 1:
-        inputs = get_input_lists(matrices, get_lists_indexes(length,window_size),window_size,length)
-    else:
-        inputs = []
-        if length == 1:
-            for i in range(window_size):
-                inputs.append(np.zeros((0,input_channels,depth)))
-        else:      
-            var = int(window_size*depth/2)    # difference between values in columns
-            var2 = int((length-window_size*depth/2)/var) # number of rows
+    inputs = []
+    if length == 1:
+        for i in range(window_size):
+            inputs.append(np.zeros((0,input_channels,depth)))
+    else:      
+        var = int(window_size*depth/2)    # difference between values in columns
+        var2 = int((length-window_size*depth/2)/var) # number of rows
 
-            for j in range(var2):
-                if j == 0:
-                    for i in range(window_size):
-                        inputs.append(np.zeros((var2,input_channels,depth)))
-                        inputs[i][j] = matrices[:,i*depth:(i+1)*depth]
-                else:
-                    for i in range(window_size):
-                        inputs[i][j] = matrices[:,var*j+i*depth:var*j+(i+1)*depth]
+        for j in range(var2):
+            if j == 0:
+                for i in range(window_size):
+                    inputs.append(np.zeros((var2,input_channels,depth)))
+                    inputs[i][j] = matrices[:,i*depth:(i+1)*depth]
+            else:
+                for i in range(window_size):
+                    inputs[i][j] = matrices[:,var*j+i*depth:var*j+(i+1)*depth]
 
     del matrices
     gc.collect()
@@ -497,7 +433,7 @@ def preprocess_data_type_lstm(matrix,window_size,depth):
     y = np.ones((number_y_labels,1),dtype=np.int8)
     return inputs, y
 
-def reshape_input_dictionary(input_dict, output_list, batch_size, depth):
+def reshape_input_dictionary(input_dict, output_list, batch_size,depth):
 
     input_rows = 20
     input_columns = 21
@@ -518,7 +454,7 @@ def load_overlapped_data_cascade(file_dirs_depth):
     
     input_rows = 20
     input_columns = 21
-    input_channels = 248   
+    input_channels = 248 #MEG channels
     number_classes = 4
     window_size = 10
     depth = file_dirs_depth[1]
@@ -528,6 +464,7 @@ def load_overlapped_data_cascade(file_dirs_depth):
     memory_matrix = np.random.rand(input_channels,1)
     motor_matrix = np.random.rand(input_channels,1)
  
+
     files_to_load = file_dirs_depth[0]
     
     for i in range(len(files_to_load)):
@@ -564,25 +501,24 @@ def load_overlapped_data_cascade(file_dirs_depth):
             motor_matrix = np.column_stack((motor_matrix, matrix))
         matrix = None
 
-    x_rest,y_rest = preprocess_data_type(rest_matrix, window_size) 
+    x_rest,y_rest = preprocess_data_type(rest_matrix, window_size,depth) 
     rest_matrix = None
     y_rest = y_rest*0
 
-    x_math,y_math = preprocess_data_type(math_matrix,window_size)
+    x_math,y_math = preprocess_data_type(math_matrix,window_size,depth)
     math_matrix = None
     gc.collect()
 
-    x_mem,y_mem = preprocess_data_type(memory_matrix,window_size)
+    x_mem,y_mem = preprocess_data_type(memory_matrix,window_size,depth)
     memory_matrix = None
     y_mem = y_mem * 2
    
-    x_motor,y_motor = preprocess_data_type(motor_matrix,window_size)
+    x_motor,y_motor = preprocess_data_type(motor_matrix,window_size,depth)
     motor_matrix = None
     y_motor = y_motor * 3
     gc.collect()
-
+       
     dict_list = []
-    
     for i in range(window_size):
         dict_list.append({0:x_rest[i], 1:x_math[i], 2:x_mem[i], 3:x_motor[i]})
         x_rest[i]= None
@@ -616,8 +552,8 @@ def load_overlapped_data_cascade(file_dirs_depth):
 
     y = np.delete(y,0,0)
 
-    inputs[0],inputs[1],inputs[2],inputs[3],inputs[4],inputs[5],inputs[6],inputs[7],inputs[8],inputs[9],y = shuffle(inputs[0],inputs[1],inputs[2],inputs[3],inputs[4],inputs[5],inputs[6],inputs[7],inputs[8],inputs[9],y,random_state=42)
-    
+    # inputs[0],inputs[1],inputs[2],inputs[3],inputs[4],inputs[5],inputs[6],inputs[7],inputs[8],inputs[9],y = shuffle(inputs[0],inputs[1],inputs[2],inputs[3],inputs[4],inputs[5],inputs[6],inputs[7],inputs[8],inputs[9],y,random_state=42)
+    *inputs,y = shuffle(*inputs,y,random_state=42)
     x_length = inputs[0].shape[0]
     for i in range(x_length):
         for j in range(window_size):
@@ -645,11 +581,11 @@ def load_overlapped_data_multiview(file_dirs_depth):
 
     input_rows = 20
     input_columns = 21
-    input_channels = 248
+    input_channels = 248 #MEG channels
     number_classes = 4
     window_size = 10
     depth = file_dirs_depth[1]
-    
+
     rest_matrix = np.random.rand(input_channels,1)
     math_matrix = np.random.rand(input_channels,1)
     memory_matrix = np.random.rand(input_channels,1)
@@ -692,24 +628,24 @@ def load_overlapped_data_multiview(file_dirs_depth):
 
         matrix = None
 
-    x_rest,y_rest = preprocess_data_type(rest_matrix,window_size)
-    x_rest_lstm,y_rest_lstm = preprocess_data_type_lstm(rest_matrix,window_size)  
+    x_rest,y_rest = preprocess_data_type(rest_matrix,window_size,depth)
+    x_rest_lstm,y_rest_lstm = preprocess_data_type_lstm(rest_matrix,window_size,depth)  
     rest_matrix = None
     y_rest = y_rest*0
     y_rest_lstm = y_rest_lstm*0
 
-    x_math,y_math = preprocess_data_type(math_matrix,window_size)
-    x_math_lstm,y_math_lstm = preprocess_data_type_lstm(math_matrix,window_size)       
+    x_math,y_math = preprocess_data_type(math_matrix,window_size,depth)
+    x_math_lstm,y_math_lstm = preprocess_data_type_lstm(math_matrix,window_size,depth)       
     math_matrix = None
     
-    x_mem,y_mem = preprocess_data_type(memory_matrix,window_size)
-    x_mem_lstm,y_mem_lstm = preprocess_data_type_lstm(memory_matrix,window_size)
+    x_mem,y_mem = preprocess_data_type(memory_matrix,window_size,depth)
+    x_mem_lstm,y_mem_lstm = preprocess_data_type_lstm(memory_matrix,window_size,depth)
     memory_matrix = None
     y_mem = y_mem*2
     y_mem_lstm = y_mem_lstm*2
     
-    x_motor,y_motor = preprocess_data_type(motor_matrix,window_size)
-    x_motor_lstm,y_motor_lstm = preprocess_data_type_lstm(motor_matrix,window_size)
+    x_motor,y_motor = preprocess_data_type(motor_matrix,window_size,depth)
+    x_motor_lstm,y_motor_lstm = preprocess_data_type_lstm(motor_matrix,window_size,depth)
     motor_matrix = None
     y_motor = y_motor * 3
     y_motor_lstm = y_motor_lstm * 3
@@ -760,9 +696,8 @@ def load_overlapped_data_multiview(file_dirs_depth):
 
     y = np.delete(y,0,0)
 
-    inputs[0],inputs[1],inputs[2],inputs[3],inputs[4],inputs[5],inputs[6],inputs[7],inputs[8],inputs[9],inputs[10],inputs[11],inputs[12],inputs[13],inputs[14],inputs[15],inputs[16],inputs[17],inputs[18],inputs[19],y = shuffle(inputs[0],inputs[1],inputs[2],inputs[3],inputs[4],inputs[5],inputs[6],inputs[7],inputs[8],inputs[9], inputs[10],inputs[11],inputs[12],inputs[13],inputs[14],inputs[15],inputs[16],inputs[17],inputs[18],inputs[19], y,random_state=42)
-    
-   
+    # inputs[0],inputs[1],inputs[2],inputs[3],inputs[4],inputs[5],inputs[6],inputs[7],inputs[8],inputs[9],inputs[10],inputs[11],inputs[12],inputs[13],inputs[14],inputs[15],inputs[16],inputs[17],inputs[18],inputs[19],y = shuffle(inputs[0],inputs[1],inputs[2],inputs[3],inputs[4],inputs[5],inputs[6],inputs[7],inputs[8],inputs[9], inputs[10],inputs[11],inputs[12],inputs[13],inputs[14],inputs[15],inputs[16],inputs[17],inputs[18],inputs[19], y,random_state=42)
+    *inputs,y = shuffle(*inputs,y,random_state=42)
     x_length = inputs[0].shape[0]
     for i in range(x_length):
         for j in range(window_size):
@@ -1096,7 +1031,7 @@ def array_to_mesh(arr):
     
     return output
 
-#Assumes data already contained in Data folder
+
 training_file_dir = "Data/train"
 all_train_files = [f for f in listdir(training_file_dir) if isfile(join(training_file_dir, f))]
 train_files_dirs = []
@@ -1122,4 +1057,6 @@ for i in range(len(all_test_files)):
     test_files_dirs.append(test_file_dir+'/'+all_test_files[i])
 rest_list, mem_list, math_list, motor_list = separate_list(test_files_dirs)
 test_files_dirs = order_arranging(rest_list, mem_list, math_list, motor_list)
+
+
 
