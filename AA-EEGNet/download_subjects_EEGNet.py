@@ -1,3 +1,28 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# 								      #
+# The script downloads the subjects and saves the subject in          #
+# both the original format and h5 format (preprocessing them as well) #
+# ready to use with EEGNet                                            #
+#                                                                     #
+# To download the subjects from Amazon S3 server you need an account  #
+# on such a server and enough disk memory as the are quite heavy      #
+#								      #
+# ------------------------------------------------------------------- #
+#								      #	
+# FILL THE LINES WITH THE PERSONAL & SECRET ACCESS KEY BELOW!         #
+#								      #
+# ------------------------------------------------------------------- #
+#								      #
+#  **Please make sure you have the next dependences installed**       #
+#								      #
+#  pip install NumPy						      #
+#  pip install boto3						      #
+#  pip install sklearn                                                #
+#  pip install keras                                                  #
+#  pip install h5py                                                   #
+#								      #  
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 import data_utils_EEGNet as utils
 import numpy as np
 import os
@@ -6,30 +31,6 @@ from sklearn.model_selection import train_test_split
 from keras import utils as np_utils
 import h5py
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-# 																	                                  #
-# The script downloads the subjects and saves the subject in          #
-# both the original format and h5 format (preprocessing them as well) #
-# ready to use with EEGNet                                            #
-#                                                                     #
-# To download the subjects from Amazon S3 server you need an account  #
-# on such a server and enough disk memory as the are quite heavy      #
-#																	                                    #
-# ------------------------------------------------------------------- #
-#																  	                                  #	
-# FILL THE LINES WITH THE PERSONAL & SECRET ACCESS KEY BELOW!! :)	    #
-#																	                                    #
-# ------------------------------------------------------------------- #
-#																  	   																#
-#  **Please make sure you have the next dependences installed**       #
-#																  	                                  #
-#  pip install NumPy									                       		      #
-#  pip install boto3										                       	      #
-#  pip install sklearn                                                #
-#  pip install keras                                                  #
-#  pip install h5py                                                   #
-#																                                      #  
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 #List of the subjects to be dowloaded
 list_subjects = ['105923','164636', '133019',
