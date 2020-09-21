@@ -1,7 +1,7 @@
 📡 Deep brain state classification of MEG data
 ========
 
-This project aims to perform cross-subject multi-class classification based on MEG signals to infer the subject's state. The implemented models are AA-CascadeNet, AA-MultiviewNet and AA-EEGNet, all of which incorporates both self and global attention mechanisms. 
+This project aims to perform cross-subject multi-class classification based on MEG signals to infer the subject's state. The implemented models are AA-CascadeNet, AA-MultiviewNet and AA-EEGNet, all of which incorporates both self and global attention mechanisms. The original paper can be found at: https://arxiv.org/pdf/2007.00897.pdf
 
 
 📊 Results
@@ -82,11 +82,11 @@ To test the AA-EEGNet with a pretrained model:
 📂 Data
 -----
 
-- Data for the AA-CascadeNet and the AA-MultiviewNet networks at the following `link <https://mega.nz/file/KcsXELzR#HLpcYcP7g5VM4NdAIM4M-hxXjyhtLncbrj4xUh6Zr9k>`__
+In order to download the data, please email to both of the following addresses:
 
-- Data for AA-EEGNet at the following `link <https://mega.nz/file/GVk0EKCI#GX6agShuNWVx2ucktIiJPRkwLQDQCI6BNeFP-tq5pwM>`__
+i.alaouiabdellaoui@student.maastrichtuniversity.nl
 
-Both datasets contain the same subjects for training, validation, and testing, but they slightly differ in the trials selected.
+siamak.mehrkanoon@maastrichtuniversity.nl
 
 The data must be downloaded and unzipped in the same directory as the scripts.
 
@@ -108,9 +108,11 @@ If you decide to cite our project in your paper or use our data, please use the 
 
 .. code:: bibtex
 
-  @misc{alaoui2020meg,
-     title={Deep brain state classification of MEG data},
-     author={Alaoui Abdellaoui, Ismail and García Fernández, Jesús and Şahinli, Caner and Mehrkanoon, Siamak},
-     year={2020},
-     url={}
-  }
+  @misc{abdellaoui2020deep,
+        title={Deep brain state classification of MEG data},
+        author={Ismail Alaoui Abdellaoui and Jesús García Fernández and Caner Şahinli and Siamak Mehrkanoon},
+        year={2020},
+        eprint={2007.00897},
+        archivePrefix={arXiv},
+        primaryClass={cs.LG}
+    }
